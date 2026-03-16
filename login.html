@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Lakshya Computer Institute</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <a href="index.html" class="logo">LAKSHYA <span>INSTITUTE</span></a>
+            <p>Portal Access</p>
+        </div>
+        
+        <div class="login-tabs">
+            <div class="tab active" onclick="switchTab('admin')">Admin Login</div>
+            <div class="tab" onclick="switchTab('student')">Student Login</div>
+        </div>
+
+        <form id="loginForm" class="login-form">
+            <input type="hidden" id="roleType" value="admin">
+            
+            <div class="form-group" id="userHelper">
+                <small style="color: var(--secondary);">Hint: Admin (admin / password)</small>
+            </div>
+
+            <div class="form-group">
+                <label>Username (Admin) or Reg No (Student)</label>
+                <input type="text" id="username" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Login to Portal</button>
+            <p id="errorMsg" class="error-text"></p>
+        </form>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        function switchTab(role) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('roleType').value = role;
+            
+            if(role === 'admin') {
+                document.getElementById('userHelper').innerHTML = '<small style="color: var(--secondary);">Hint: Admin (admin / password)</small>';
+            } else {
+                document.getElementById('userHelper').innerHTML = '<small style="color: var(--secondary);">Hint: Student (student / password)<br>Or your RegNo & Contact No.</small>';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const r = document.getElementById('roleType').value;
+            
+            if (loginUser(u, p, r)) {
+                if(r === 'admin') window.location.href = 'admin.html';
+                else window.location.href = 'student.html';
+            } else {
+                document.getElementById('errorMsg').innerText = "Invalid credentials!";
+            }
+        });
+        
+        // Ensure DB is initialized
+        getDB();
+    </script>
+</body>
+</html>

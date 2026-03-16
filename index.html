@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakshya Computer Institute</title>
+    <meta name="description" content="Leading destination for cutting-edge tech education. Join Lakshya Computer Institute today.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="background: rgba(245, 158, 11, 0.9); color: white; text-align: center; padding: 0.5rem; font-size: 0.9rem; z-index: 1000; position: relative;">
+        <strong>Note for Admins:</strong> To allow YouTube Video Lectures to play without Error 153, please open this project using a local server (like the VS Code "Live Server" extension) instead of double-clicking the HTML file directly.
+    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#home" class="logo">LAKSHYA <span>INSTITUTE</span></a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#courses">Courses</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#admission">Admission</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+                <li><a href="login.html" class="btn-nav">Login <span style="font-size:0.8em">🔒</span></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="animate-fade-up">Master the Skills of Tomorrow</h1>
+            <p class="animate-fade-up delay-1">Lakshya Computer Institute provides world-class education in software development, design, and data sciences to fast-track your career.</p>
+            <div class="hero-buttons animate-fade-up delay-2">
+                <a href="#courses" class="btn btn-primary">Explore Courses</a>
+                <a href="#admission" class="btn btn-secondary">Apply Now</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="about" class="section">
+        <div class="container about-grid">
+            <div class="about-text">
+                <h2 class="section-title">About <span>Us</span></h2>
+                <p>At Lakshya Computer Institute, we believe in practical, hands-on learning. Our curriculum is designed by industry experts to ensure you acquire the skills that tech companies are actively seeking.</p>
+                <p>Whether you're starting from scratch or looking to upskill, our modern campus, state-of-the-art labs, and dedicated mentors provide the perfect environment for your growth.</p>
+                <ul class="feature-list">
+                    <li>✓ Expert Faculty</li>
+                    <li>✓ 100% Placement Assistance</li>
+                    <li>✓ Industry-Relevant Curriculum</li>
+                </ul>
+            </div>
+            <div class="about-image">
+                <img id="about-img" src="assets/students_learning.png" alt="Students learning at Lakshya">
+                <div class="image-accent"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="courses" class="section section-dark">
+        <div class="container">
+            <h2 class="section-title text-center">Featured <span>Courses</span></h2>
+            <div class="course-grid">
+                <div class="course-card">
+                    <div class="course-icon">🌐</div>
+                    <h3>Web Development</h3>
+                    <p>Master HTML, CSS, JavaScript, React, Node.js, and databases to build modern, scalable web applications.</p>
+                    <a href="#admission" class="course-link">Enroll Now →</a>
+                </div>
+                <div class="course-card">
+                    <div class="course-icon">🤖</div>
+                    <h3>Artificial Intelligence</h3>
+                    <p>Learn Python, Machine Learning, Data Visualization, and generative AI over a comprehensive program.</p>
+                    <a href="#admission" class="course-link">Enroll Now →</a>
+                </div>
+                <div class="course-card">
+                    <div class="course-icon">📊</div>
+                    <h3>Advance Excel</h3>
+                    <p>Master complex formulas, data analysis, and visualization techniques to become an Excel expert.</p>
+                    <a href="#admission" class="course-link">Enroll Now →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="section">
+        <div class="container">
+            <h2 class="section-title text-center">Campus <span>Gallery</span></h2>
+            <div class="gallery-grid">
+                <div class="gallery-item grad-1"><h3>Modern Labs</h3></div>
+                <div class="gallery-item grad-2"><h3>Workshops</h3></div>
+                <div class="gallery-item grad-3"><h3>Library</h3></div>
+                <div class="gallery-item grad-4"><h3>Student Life</h3></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="admission" class="section cta-section">
+        <div class="container text-center">
+            <h2>Ready to Start Your Journey?</h2>
+            <p>Admissions are now open for the upcoming batch. Secure your seat today and take the first step towards a rewarding tech career.</p>
+            <a href="#contact" class="btn btn-primary btn-large">Get Admission Details</a>
+        </div>
+    </section>
+
+    <section id="contact" class="section section-dark">
+        <div class="container contact-grid">
+            <div class="contact-info">
+                <h2 class="section-title">Contact <span>Us</span></h2>
+                <p>Have questions? We'd love to hear from you. Reach out to our admission counselors or visit our campus.</p>
+                <div class="info-item">
+                    <strong>📍 Location:</strong>
+                    <p>123 Tech Park Avenue, Innovation District, City 40001</p>
+                </div>
+                <div class="info-item">
+                    <strong>📞 Phone:</strong>
+                    <p>+91 98765 43210</p>
+                </div>
+                <div class="info-item">
+                    <strong>✉️ Email:</strong>
+                    <p>admissions@lakshyainstitute.edu</p>
+                </div>
+            </div>
+            <form class="contact-form" onsubmit="event.preventDefault(); alert('Message sent successfully!');">
+                <div class="form-group">
+                    <input type="text" placeholder="Your Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" placeholder="Your Email" required>
+                </div>
+                <div class="form-group">
+                    <select required>
+                        <option value="" disabled selected>Select Course of Interest</option>
+                        <option value="ADCA Plus">ADCA Plus</option>
+                        <option value="ADCA">ADCA</option>
+                        <option value="DCA">DCA</option>
+                        <option value="DFA">DFA</option>
+                        <option value="ADFA">ADFA</option>
+                        <option value="Tally Prime">Tally Prime</option>
+                        <option value="O Level">O Level</option>
+                        <option value="Computer Basic">Computer Basic</option>
+                        <option value="Advance Excel">Advance Excel</option>
+                        <option value="DTP">DTP</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Artificial Intelligence">Artificial Intelligence</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <textarea placeholder="Your Message" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; 2026 Lakshya Computer Institute. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#">Facebook</a>
+                <a href="#">Twitter</a>
+                <a href="#">LinkedIn</a>
+                <a href="#">Instagram</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

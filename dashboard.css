@@ -1,0 +1,208 @@
+/* Dashboard specific styling */
+
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-dark), var(--bg-darker));
+}
+
+.login-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 3rem;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-tabs {
+    display: flex;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.3);
+}
+
+.login-tabs .tab {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+}
+
+.login-tabs .tab.active {
+    background: rgba(79, 70, 229, 0.2);
+    border-bottom: 3px solid var(--primary);
+    color: var(--primary);
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+}
+
+.login-form input {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.error-text {
+    color: #ef4444;
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: 600;
+}
+
+/* Dashboard Layout */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background: var(--bg-darker);
+    border-right: 1px solid var(--border);
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-logo {
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+}
+
+.sidebar-menu {
+    list-style: none;
+    flex: 1;
+}
+
+.sidebar-menu li {
+    padding: 1rem 2rem;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+    transition: all 0.3s;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.sidebar-menu li:hover, .sidebar-menu li.active {
+    background: rgba(79, 70, 229, 0.1);
+    border-left-color: var(--primary);
+    color: var(--text-main);
+}
+
+.logout-btn {
+    padding: 1rem 2rem;
+    color: #ef4444;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    background: var(--bg-dark);
+    overflow-y: auto;
+}
+
+.panel {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+/* Tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+}
+
+.data-table th, .data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    color: var(--secondary);
+    font-weight: 600;
+}
+
+.data-table tr:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+/* Attendance Grid */
+.attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.att-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: 1px solid var(--border);
+}
+
+.att-day.P { background: rgba(16, 185, 129, 0.2); border-color: #10B981; color: #10B981; }
+.att-day.A { background: rgba(239, 68, 68, 0.2); border-color: #EF4444; color: #EF4444; }
+
+.att-day:hover { transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }

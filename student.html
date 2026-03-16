@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Lakshya Institute</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="index.html" class="logo">🎯 Lakshya <span>Institute</span></a>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active" onclick="switchPanel('profile')">🔗 Profile</li>
+            <li onclick="switchPanel('fees')">🔗 Fee History</li>
+            <li onclick="switchPanel('attendance')">🔗 Attendance</li>
+            <li onclick="switchPanel('notes')">🔗 Study Notes</li>
+            <li onclick="switchPanel('videos')">🔗 Video Lectures</li>
+            <li onclick="switchPanel('results')">My Results</li>
+            <li onclick="switchPanel('onlineexam')">Take Online Exam</li>
+        </ul>
+        <div style="flex:1"></div>
+        <div class="logout-btn" onclick="logoutUser()">🚪 Logout</div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Notification Marquee -->
+        <div id="notifMarqueeContainer"
+            style="display: none; background: rgba(245, 158, 11, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 0.8rem; font-weight: 600; font-size: 1.1rem; border-radius: 8px; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center;">
+                <span style="margin-right: 1rem; font-size: 1.2rem;">📢</span>
+                <marquee id="notifMarquee" behavior="scroll" direction="left" scrollamount="6" style="flex: 1;">
+                </marquee>
+            </div>
+        </div>
+
+        <!-- Profile Panel -->
+        <section id="panel-profile" class="panel active">
+            <div class="panel-header">
+                <h2>Student Profile</h2>
+                <p class="text-muted">Welcome back, <span id="welcomeName"></span>!</p>
+            </div>
+            <div class="card" style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem;">
+                <div style="text-align: center;">
+                    <div id="profilePhotoContainer"
+                        style="width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: var(--secondary); overflow: hidden;">
+                        🎓
+                    </div>
+                    <h3 id="profName" style="margin-top: 1rem;"></h3>
+                    <p id="profRegNo" class="text-muted"></p>
+                </div>
+                <div class="form-grid">
+                    <div class="info-item"><strong>Course:</strong> <span id="profCourse"></span></div>
+                    <div class="info-item"><strong>Father's Name:</strong> <span id="profFather"></span></div>
+                    <div class="info-item"><strong>Contact:</strong> <span id="profContact"></span></div>
+                    <div class="info-item"><strong>Address:</strong> <span id="profAddress"></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fee History Panel -->
+        <section id="panel-fees" class="panel">
+            <div class="panel-header">
+                <h2>Fee History</h2>
+            </div>
+            <div class="card"
+                style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="info-item" style="margin:0; text-align: center;">
+                    <strong>Total Course Fee</strong>
+                    <h3 style="color: white; margin-top:0.5rem;">₹<span id="feeTotal"></span></h3>
+                </div>
+                <div class="info-item" style="margin:0; text-align: center;">
+                    <strong>Total Paid</strong>
+                    <h3 style="color: #10b981; margin-top:0.5rem;">₹<span id="feePaid"></span></h3>
+                </div>
+                <div class="info-item" style="margin:0; text-align: center;">
+                    <strong>Remaining Balance</strong>
+                    <h3 style="color: #ef4444; margin-top:0.5rem;">₹<span id="feeBalance"></span></h3>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="stuFeeTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Receipt Number</th>
+                            <th>Amount Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Attendance Panel -->
+        <section id="panel-attendance" class="panel">
+            <div class="panel-header">
+                <h2>Attendance Record</h2>
+                <input type="month" id="attMonthFilter"
+                    style="padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius: 5px;">
+            </div>
+
+            <div class="card">
+                <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                    <div>Present: <strong style="color: #10b981;" id="attPresentCount">0</strong></div>
+                    <div>Absent: <strong style="color: #ef4444;" id="attAbsentCount">0</strong></div>
+                </div>
+
+                <div class="attendance-grid" id="attGrid"></div>
+            </div>
+        </section>
+
+        <!-- Notes Panel -->
+        <section id="panel-notes" class="panel">
+            <div class="panel-header">
+                <h2>Study Notes</h2>
+                <p class="text-muted">Download latest study materials provided by the institute.</p>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="stuNotesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Title</th>
+                            <th>Course</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Video Lectures Panel -->
+        <section id="panel-videos" class="panel">
+            <div class="panel-header">
+                <h2>Video Lectures</h2>
+                <p class="text-muted">Watch recorded lectures and tutorials for your course.</p>
+            </div>
+
+            <div id="videoGallery"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                <!-- Videos will be injected here -->
+            </div>
+        </section>
+
+        <!-- Results Panel -->
+        <section id="panel-results" class="panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h2>Academic Results</h2>
+                    <p class="text-muted">View your module scores and download your certificate.</p>
+                </div>
+                <button id="downloadCertBtn" class="btn btn-primary" onclick="generateCertificate()"
+                    style="display: none; padding: 0.8rem 1.5rem; font-size: 1.1rem;">
+                    🎓 Download Certificate
+                </button>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="stuResultsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Subject / Module</th>
+                            <th>Maximum Marks</th>
+                            <th>Marks Scored</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="certMessage" class="text-muted" style="margin-top: 1rem; text-align: center;"></div>
+        </section>
+
+            </div>
+        </section>
+
+        <!-- Online Exam Panel -->
+        <section id="panel-onlineexam" class="panel">
+            <div id="examListSection">
+                <div class="panel-header">
+                    <h2>Available Online Exams</h2>
+                    <p class="text-muted">Take your course exams and check results here.</p>
+                </div>
+                <div id="topperAnnouncement" class="card mb-4" style="display:none; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; text-align: center;">
+                    <h2 style="margin-bottom:0.5rem;">🎊 Congratulations! 🎊</h2>
+                    <p style="font-size:1.2rem;" id="topperMessage"></p>
+                </div>
+                <div id="studentExamsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <!-- Available exams will be injected here -->
+                </div>
+            </div>
+
+            <div id="examInterfaceSection" style="display:none;">
+                <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 id="activeExamName">Exam Name</h2>
+                        <p class="text-muted" id="activeExamDetails"></p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div id="questionsContainer"></div>
+                    <button class="btn btn-primary" style="margin-top: 2rem; width: 100%;" onclick="submitExam()">Finish & Submit Exam</button>
+                </div>
+            </div>
+
+            <div id="examReviewSection" style="display:none;">
+                <div class="panel-header">
+                    <h2 id="reviewExamName">Exam Review</h2>
+                    <p id="reviewScoreText"></p>
+                </div>
+                <button class="btn btn-secondary mb-4" onclick="showExamList()">← Back to Exams</button>
+                <div id="reviewContainer"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Hidden Certificate Template -->
+    <div id="certificateTemplate"
+        style="display: none; width: 800px; height: 600px; padding: 40px; text-align: center; border: 10px solid #f59e0b; background: white; color: #1e293b; font-family: 'Outfit', sans-serif; position: relative; box-sizing: border-box;">
+        <div
+            style="border: 2px solid #f59e0b; height: 100%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h1 style="color: #f59e0b; font-size: 3rem; margin: 0; letter-spacing: 2px;">LAKSHYA</h1>
+                <h3 style="margin: 0; font-size: 1.2rem; color: #64748b; letter-spacing: 1px;">COMPUTER INSTITUTE</h3>
+            </div>
+
+            <div>
+                <h2 style="font-size: 2.5rem; font-weight: 300; margin: 20px 0; color: #0f172a;">CERTIFICATE OF
+                    COMPLETION</h2>
+                <p style="font-size: 1.1rem; color: #64748b;">This is to certify that</p>
+                <h2 id="certName"
+                    style="font-size: 2.5rem; font-weight: 600; border-bottom: 2px solid #cbd5e1; display: inline-block; padding-bottom: 5px; margin: 10px 0; color: #0f172a;">
+                    Student Name</h2>
+                <p style="font-size: 1.1rem; color: #64748b;">has successfully completed the course</p>
+                <h3 id="certCourse" style="font-size: 1.8rem; color: #f59e0b; margin: 10px 0;">Course Name</h3>
+                <p style="font-size: 1.1rem; color: #64748b;">with an impressive overall grade.</p>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px;">
+                <div style="text-align: left;">
+                    <p style="margin: 0; font-weight: bold; font-size: 1.2rem;" id="certDate">Date</p>
+                    <p
+                        style="margin: 0; font-size: 0.9rem; color: #94a3b8; border-top: 1px solid #cbd5e1; padding-top: 5px;">
+                        Date of Issue</p>
+                </div>
+                <div style="text-align: center;">
+                    <div
+                        style="width: 100px; height: 100px; border: 3px solid #f59e0b; border-radius: 50%; line-height: 94px; font-weight: bold; color: #f59e0b; font-size: 1.5rem; margin: 0 auto 10px auto; transform: rotate(-15deg);">
+                        AWARD</div>
+                </div>
+                <div style="text-align: right;">
+                    <p
+                        style="margin: 0; font-weight: bold; font-size: 1.2rem; font-family: 'Brush Script MT', cursive; font-style: italic;">
+                        Director</p>
+                    <p
+                        style="margin: 0; font-size: 0.9rem; color: #94a3b8; border-top: 1px solid #cbd5e1; padding-top: 5px;">
+                        Authorized Signature</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="db.js"></script>
+    <script>
+        const user = getCurrentUser();
+        if (!user || user.role !== 'student') {
+            window.location.href = 'login.html';
+        }
+
+        const db = getDB();
+        const studentData = db.students.find(s => s.regNo === user.regNo) || user;
+
+        function switchPanel(panelId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
+
+            document.getElementById('panel-' + panelId).classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+
+            if (panelId === 'onlineexam') showExamList();
+            if (panelId === 'notes') renderNotes();
+            if (panelId === 'videos') renderVideos();
+            if (panelId === 'results') renderResults();
+        }
+
+
+        if (studentData.photo) {
+            document.getElementById('profilePhotoContainer').innerHTML = `<img src="${studentData.photo}" style="width:100%; height:100%; object-fit:cover;">`;
+        }
+        document.getElementById('welcomeName').innerText = studentData.name || "Student";
+        document.getElementById('profName').innerText = studentData.name || "N/A";
+        document.getElementById('profRegNo').innerText = studentData.regNo || "N/A";
+        document.getElementById('profCourse').innerText = studentData.course || "N/A";
+        document.getElementById('profFather').innerText = studentData.fatherName || "N/A";
+        document.getElementById('profContact').innerText = studentData.contact || "N/A";
+        document.getElementById('profAddress').innerText = studentData.address || "N/A";
+
+        function showExamList() {
+            const db = getDB();
+            if(!db.onlineExams) db.onlineExams = [];
+            
+            document.getElementById('examListSection').style.display = 'block';
+            document.getElementById('examInterfaceSection').style.display = 'none';
+            document.getElementById('examReviewSection').style.display = 'none';
+            renderStudentExams();
+            checkTopperStatus();
+        }
+
+        function renderStudentExams() {
+            const list = document.getElementById('studentExamsList');
+            list.innerHTML = '';
+            const now = new Date();
+
+            db.onlineExams.forEach(exam => {
+                const isMyCourse = exam.course === 'All' || exam.course === studentData.course;
+                if (!isMyCourse) return;
+
+                const expiry = new Date(exam.expiry);
+                const isExpired = now > expiry;
+                if (isExpired) return;
+
+                const result = studentData.examResults ? studentData.examResults.find(r => r.examId === exam.id) : null;
+
+                let actionHtml = '';
+                if (result) {
+                    if (exam.published) {
+                        actionHtml = `<button class="btn btn-secondary" onclick="reviewExam('${exam.id}')">Review Result</button>`;
+                    } else {
+                        actionHtml = `<span class="text-muted">Result Pending</span>`;
+                    }
+                } else {
+                    actionHtml = `<button class="btn btn-primary" onclick="startExam('${exam.id}')">Start Exam</button>`;
+                }
+
+                list.innerHTML += `
+                    <div class="card">
+                        <h3 style="color: var(--secondary)">${exam.name}</h3>
+                        <p class="text-muted">Date: ${exam.date}</p>
+                        <p class="text-muted">Expires: ${expiry.toLocaleString()}</p>
+                        <div style="margin-top: 1rem;">${actionHtml}</div>
+                    </div>
+                `;
+            });
+
+            if (list.innerHTML === '') {
+                list.innerHTML = '<p class="text-muted">No active exams available for your course.</p>';
+            }
+        }
+
+        let activeExam = null;
+        function startExam(id) {
+            activeExam = db.onlineExams.find(x => x.id === id);
+            if (!activeExam) return;
+
+            document.getElementById('examListSection').style.display = 'none';
+            document.getElementById('examInterfaceSection').style.display = 'block';
+            document.getElementById('activeExamName').innerText = activeExam.name;
+            document.getElementById('activeExamDetails').innerText = `${activeExam.questions.length} Questions | Course: ${activeExam.course}`;
+
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            activeExam.questions.forEach((q, qIdx) => {
+                let optionsHtml = q.options.map((opt, oIdx) => `
+                    <label style="display: block; margin-bottom: 0.8rem; cursor: pointer;">
+                        <input type="radio" name="q${qIdx}" value="${oIdx}"> ${opt}
+                    </label>
+                `).join('');
+
+                container.innerHTML += `
+                    <div style="margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem;"><strong>Q${qIdx + 1}:</strong> ${q.q}</p>
+                        <div style="padding-left: 1rem;">${optionsHtml}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function submitExam() {
+            if (!confirm("Are you sure you want to submit your answers?")) return;
+
+            let score = 0;
+            const studentAnswers = [];
+
+            activeExam.questions.forEach((q, idx) => {
+                const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+                const answerIndex = selected ? parseInt(selected.value) : null;
+                studentAnswers.push(answerIndex);
+
+                if (answerIndex !== null && answerIndex === q.ans) score++;
+            });
+
+            if (!studentData.examResults) studentData.examResults = [];
+            
+            // Remove any existing result for this exam (shouldn't happen with UI logic but for safety)
+            studentData.examResults = studentData.examResults.filter(r => r.examId !== activeExam.id);
+
+            studentData.examResults.push({
+                examId: activeExam.id,
+                score: score,
+                total: activeExam.questions.length,
+                answers: studentAnswers,
+                date: new Date().toISOString()
+            });
+
+            // Sync with main DB students array
+            const dbStudents = getDB().students;
+            const sIdx = dbStudents.findIndex(s => s.regNo === studentData.regNo);
+            dbStudents[sIdx].examResults = studentData.examResults;
+            const updatedDB = getDB();
+            updatedDB.students = dbStudents;
+            saveDB(updatedDB);
+
+            alert(`Thank You. Your Result will be published soon.`);
+            showExamList();
+        }
+
+        function reviewExam(examId) {
+            const db = getDB();
+            const studentData = db.students.find(s => s.regNo === user.regNo);
+            const exam = db.onlineExams.find(x => x.id === examId);
+            const result = studentData.examResults.find(r => r.examId === examId);
+            if (!exam || !result) return;
+
+            document.getElementById('examListSection').style.display = 'none';
+            document.getElementById('examReviewSection').style.display = 'block';
+            document.getElementById('reviewExamName').innerText = `Review: ${exam.name}`;
+            
+            const percent = ((result.score / result.total) * 100).toFixed(1);
+            document.getElementById('reviewScoreText').innerText = `Score: ${result.score} / ${result.total} (${percent}%)`;
+
+            const container = document.getElementById('reviewContainer');
+            container.innerHTML = '';
+
+            exam.questions.forEach((q, idx) => {
+                const studentAnsIdx = result.answers[idx];
+                const isCorrect = studentAnsIdx !== null && studentAnsIdx === q.ans;
+                const color = isCorrect ? '#10b981' : '#ef4444';
+                const studentAnsText = studentAnsIdx !== null ? q.options[studentAnsIdx] : 'No Answer';
+                const correctAnsText = q.options[q.ans];
+
+                container.innerHTML += `
+                    <div class="card" style="border-left: 5px solid ${color}; margin-bottom: 1rem;">
+                        <p><strong>Q${idx + 1}:</strong> ${q.q}</p>
+                        <p style="margin-top:0.5rem">Your Answer: <span style="color:${color}">${studentAnsText}</span></p>
+                        ${!isCorrect ? `<p style="color:#10b981">Correct Answer: ${correctAnsText}</p>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        function checkTopperStatus() {
+            const db = getDB(); // Get fresh DB
+            const announcement = document.getElementById('topperAnnouncement');
+            const msg = document.getElementById('topperMessage');
+            announcement.style.display = 'none';
+
+            if (!db.onlineExams) return;
+
+            // Find latest published exam
+            const publishedExams = db.onlineExams
+                .filter(x => x.published)
+                .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            if (publishedExams.length === 0) return;
+
+            const latestExam = publishedExams[0];
+            
+            // Only show message if the student has a result for THIS specific latest exam
+            const myResult = studentData.examResults ? studentData.examResults.find(r => r.examId === latestExam.id) : null;
+            if (!myResult) return;
+
+            // Find all results for this specific exam to determine topper
+            const allResults = [];
+            db.students.forEach(s => {
+                if (s.examResults) {
+                    const r = s.examResults.find(res => res.examId === latestExam.id);
+                    if (r) allResults.push({ name: s.name, regNo: s.regNo, score: r.score });
+                }
+            });
+
+            if (allResults.length === 0) return;
+
+            // Find highest score for this exam
+            const maxScore = Math.max(...allResults.map(r => r.score));
+            const toppers = allResults.filter(r => r.score === maxScore);
+
+            const isMeTopper = toppers.some(t => t.regNo === studentData.regNo);
+            
+            if (isMeTopper) {
+                announcement.style.display = 'block';
+                msg.innerText = `Congratulations! You are Top Scorer of this Exam`;
+            }
+        }
+
+        // Populate Fees
+        document.getElementById('feeTotal').innerText = studentData.courseFee;
+        document.getElementById('feeBalance').innerText = studentData.balanceFee;
+        document.getElementById('feePaid').innerText = studentData.courseFee - studentData.balanceFee;
+
+        const feeTbody = document.querySelector('#stuFeeTable tbody');
+        if (studentData.fees && studentData.fees.length > 0) {
+            studentData.fees.forEach(f => {
+                feeTbody.innerHTML += `
+                    <tr>
+                        <td>${f.date}</td>
+                        <td><strong>${f.receiptNo}</strong></td>
+                        <td style="color: #10b981;">+ ₹${f.amount}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            feeTbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No payment records found.</td></tr>`;
+        }
+
+        // Populate Attendance
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('attMonthFilter').value = `${yyyy}-${mm}`;
+
+        document.getElementById('attMonthFilter').addEventListener('change', renderAttendance);
+
+        function renderAttendance() {
+            const val = document.getElementById('attMonthFilter').value;
+            if (!val) return;
+
+            const monthData = studentData.attendance ? studentData.attendance[val] : null;
+            const grid = document.getElementById('attGrid');
+            grid.innerHTML = '';
+
+            let presents = 0;
+            let absents = 0;
+
+            // Generate mock days for the month (simplified: 1 to 31)
+            const daysInMonth = new Date(val.split('-')[0], val.split('-')[1], 0).getDate();
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                let dStr = String(i).padStart(2, '0');
+                let status = monthData ? monthData[dStr] : '';
+
+                let sClass = '';
+                if (status === 'P') { sClass = 'P'; presents++; }
+                if (status === 'A') { sClass = 'A'; absents++; }
+
+                grid.innerHTML += `<div class="att-day ${sClass}"><span>${i}</span><strong>${status}</strong></div>`;
+            }
+
+            document.getElementById('attPresentCount').innerText = presents;
+            document.getElementById('attAbsentCount').innerText = absents;
+        }
+
+        renderAttendance();
+
+        // Populate Notes
+        function renderNotes() {
+            const stuNotesTbody = document.querySelector('#stuNotesTable tbody');
+            stuNotesTbody.innerHTML = '';
+
+            if (!db.notes || db.notes.length === 0) {
+                stuNotesTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No notes available.</td></tr>`;
+                return;
+            }
+
+            const relevantNotes = db.notes.filter(n => n.course === 'All' || n.course === studentData.course);
+
+            if (relevantNotes.length === 0) {
+                stuNotesTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No notes available for your course.</td></tr>`;
+                return;
+            }
+
+            relevantNotes.slice().reverse().forEach(n => {
+                stuNotesTbody.innerHTML += `
+                    <tr>
+                        <td>${n.date}</td>
+                        <td>${n.title} (${n.fileName})</td>
+                        <td>${n.course}</td>
+                        <td><a href="${n.data}" download="${n.fileName}" class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.9rem; text-decoration: none;">Download</a></td>
+                    </tr>
+                `;
+            });
+        }
+
+        renderNotes();
+
+        // --- Video Lectures Logic ---
+        function renderVideos() {
+            if (!db.videos) return;
+            const gallery = document.getElementById('videoGallery');
+            gallery.innerHTML = '';
+
+            const myVideos = db.videos.filter(v => v.course === 'All' || v.course === studentData.course);
+
+            if (myVideos.length === 0) {
+                gallery.innerHTML = '<p class="text-muted">No video lectures available for your course yet.</p>';
+                return;
+            }
+
+            myVideos.slice().reverse().forEach(v => {
+                gallery.innerHTML += `
+                    <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                        <iframe width="100%" height="200" src="https://www.youtube.com/embed/${v.videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        <div style="padding: 1rem;">
+                            <h4 style="margin: 0 0 0.5rem 0; color: var(--secondary);">${v.title}</h4>
+                            <small class="text-muted">Posted: ${v.datePosted}</small>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        renderVideos();
+
+        // Populate Notifications
+        function renderNotifications() {
+            if (!db.notifications) return;
+            const now = Date.now();
+            const activeNotifs = db.notifications.filter(n =>
+                now <= n.expiryTimestamp &&
+                (n.course === 'All' || n.course === studentData.course)
+            );
+
+            if (activeNotifs.length > 0) {
+                const marqueeContainer = document.getElementById('notifMarqueeContainer');
+                const marquee = document.getElementById('notifMarquee');
+
+                let msgStr = activeNotifs.map(n => `🔔 ${n.message}`).join(' &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; ');
+                marquee.innerHTML = msgStr;
+                marqueeContainer.style.display = 'block';
+            }
+        }
+
+        renderNotifications();
+
+        // --- Results Logic ---
+        function renderResults() {
+            const tbody = document.querySelector('#stuResultsTable tbody');
+            tbody.innerHTML = '';
+            
+            const db = getDB();
+
+            // Combine manual results and published online results
+            const allResults = [];
+            
+            // Manual results
+            if (studentData.exams) {
+                studentData.exams.forEach(ex => allResults.push({ ...ex, type: 'manual' }));
+            }
+            
+            // Published online results
+            if (studentData.examResults) {
+                studentData.examResults.forEach(res => {
+                    const exam = db.onlineExams.find(x => x.id === res.examId);
+                    if (exam && exam.published) {
+                        allResults.push({
+                            date: new Date(res.date).toLocaleDateString('en-GB'),
+                            subject: exam.name,
+                            max: res.total,
+                            scored: res.score,
+                            type: 'online'
+                        });
+                    }
+                });
+            }
+
+            if (allResults.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No results available yet.</td></tr>`;
+                document.getElementById('certMessage').innerText = "Complete your exams to generate your certificate.";
+                return;
+            }
+
+            let totalMax = 0;
+            let totalScored = 0;
+
+            allResults.forEach(ex => {
+                totalMax += ex.max;
+                totalScored += ex.scored;
+                const percentage = ((ex.scored / ex.max) * 100).toFixed(1);
+                const passed = percentage >= 50; // Updated to 50% as per user request
+                const color = passed ? '#10b981' : '#ef4444';
+                const status = passed ? 'PASS' : 'FAIL';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${ex.date}</td>
+                        <td><strong>${ex.subject}</strong> ${ex.type === 'online' ? '<small style="color:var(--accent)">(Online)</small>' : ''}</td>
+                        <td>${ex.max}</td>
+                        <td>${ex.scored}</td>
+                        <td>${percentage}%</td>
+                        <td style="color: ${color}; font-weight: bold;">${status}</td>
+                    </tr>
+                `;
+            });
+
+            const overallPercentage = ((totalScored / totalMax) * 100).toFixed(1);
+
+            tbody.innerHTML += `
+                <tr style="background: rgba(245, 158, 11, 0.1);">
+                    <td colspan="2" style="text-align: right;"><strong>Overall Performance:</strong></td>
+                    <td><strong>${totalMax}</strong></td>
+                    <td><strong>${totalScored}</strong></td>
+                    <td colspan="2" style="color: var(--accent); font-weight: bold; font-size: 1.2rem;">${overallPercentage}%</td>
+                </tr>
+            `;
+
+            // Display Certificate Button if they have taken at least 1 exam
+            if (studentData.exams.length > 0) {
+                document.getElementById('downloadCertBtn').style.display = 'block';
+                document.getElementById('certMessage').innerText = "Congratulations! You can now download your course certificate.";
+            }
+        }
+
+        function generateCertificate() {
+            // Populate template data
+            document.getElementById('certName').innerText = studentData.name.toUpperCase();
+            document.getElementById('certCourse').innerText = studentData.course.toUpperCase();
+            document.getElementById('certDate').innerText = new Date().toLocaleDateString('en-GB');
+
+            // Find element and unhide momentarily for rendering
+            const element = document.getElementById('certificateTemplate');
+            element.style.display = 'block';
+
+            const opt = {
+                margin: 0,
+                filename: `${studentData.name.replace(/\s+/g, '_')}_Certificate.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'px', format: [800, 600], orientation: 'landscape' }
+            };
+
+            // Generate PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none'; // hide it back
+            });
+        }
+    </script>
+</body>
+
+</html>

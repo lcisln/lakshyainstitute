@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Lakshya Institute</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="index.html" class="logo">LAKSHYA <span>ADMIN</span></a>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active" onclick="switchPanel('admission')">Admission</li>
+            <li onclick="switchPanel('fees')">Fee Record</li>
+            <li onclick="switchPanel('attendance')">Attendance</li>
+            <li onclick="switchPanel('notes')">Study Notes</li>
+            <li onclick="switchPanel('videos')">Video Lectures</li>
+            <li onclick="switchPanel('notifications')">Notifications</li>
+            <li onclick="switchPanel('results')">Exam Results</li>
+            <li onclick="switchPanel('onlineexam')">Online Exam</li>
+            <li onclick="switchPanel('enquiries')">Enquiries</li>
+            <li onclick="switchPanel('expenses')">Daily Expenses</li>
+        </ul>
+        <div style="flex:1"></div>
+        <div class="logout-btn" onclick="logoutUser()">🚪 Logout</div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Admission Panel -->
+        <section id="panel-admission" class="panel active">
+            <div class="panel-header">
+                <h2>New Student Admission</h2>
+                <p class="text-muted">Register a new student into the system.</p>
+            </div>
+            <div class="card">
+                <form id="admissionForm" class="contact-form"
+                    style="padding: 0; border: none; background: transparent;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="stuName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Father's Name</label>
+                            <input type="text" id="stuFather" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number (Used as Password)</label>
+                            <input type="tel" id="stuContact" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Course Opted</label>
+                            <select id="stuCourse" required
+                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;">
+                                <option value="" disabled selected>Select Course</option>
+                                <option value="ADCA Plus">ADCA Plus</option>
+                                <option value="ADCA">ADCA</option>
+                                <option value="DCA">DCA</option>
+                                <option value="DFA">DFA</option>
+                                <option value="ADFA">ADFA</option>
+                                <option value="Tally Prime">Tally Prime</option>
+                                <option value="O Level">O Level</option>
+                                <option value="Computer Basic">Computer Basic</option>
+                                <option value="Advance Excel">Advance Excel</option>
+                                <option value="DTP">DTP</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Address</label>
+                            <textarea id="stuAddress" rows="2"
+                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;"
+                                required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Course Fee (₹)</label>
+                            <input type="number" id="stuFee" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Initial Payment (₹)</label>
+                            <input type="number" id="feePaid" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Student Photo</label>
+                            <input type="file" id="stuPhoto" accept="image/*" style="padding: 0.8rem;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Complete Admission</button>
+                </form>
+            </div>
+
+            <div class="panel-header mt-4"
+                style="margin-top:3rem; display: flex; justify-content: space-between; align-items: center;">
+                <h2>Recent Admissions</h2>
+                <select id="filterCourse" onchange="renderStudentsTable()"
+                    style="padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius: 5px;">
+                    <option value="All">All Courses</option>
+                    <option value="ADCA Plus">ADCA Plus</option>
+                    <option value="ADCA">ADCA</option>
+                    <option value="DCA">DCA</option>
+                    <option value="DFA">DFA</option>
+                    <option value="ADFA">ADFA</option>
+                    <option value="Tally Prime">Tally Prime</option>
+                    <option value="O Level">O Level</option>
+                    <option value="Computer Basic">Computer Basic</option>
+                    <option value="Advance Excel">Advance Excel</option>
+                    <option value="DTP">DTP</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Artificial Intelligence">Artificial Intelligence</option>
+                </select>
+            </div>
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>Reg No</th>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Contact</th>
+                            <th>Fee Balance</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Fee Record Panel -->
+        <section id="panel-fees" class="panel">
+            <div class="panel-header">
+                <h2>Fee & Financial Dashboard</h2>
+                <p class="text-muted">Track all student payments and monitor Net Profit.</p>
+            </div>
+
+            <!-- Global Analytics Top Banner -->
+            <div class="card" style="margin-bottom: 2rem; background: rgba(0,0,0,0.2);">
+                <h3 style="margin-bottom: 1.5rem; text-align: center; color: var(--secondary);">Total Financial Overview
+                </h3>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: center;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="info-item" style="text-align: center;">
+                            <strong>Total Income (Fees Paid)</strong>
+                            <h3 style="color: #10b981; margin-top:0.5rem; font-size: 2rem;">₹<span
+                                    id="globalPaidStr">0</span></h3>
+                            <small class="text-muted">Total Expected: ₹<span id="globalTotalStr">0</span></small>
+                        </div>
+                        <div class="info-item" style="text-align: center;">
+                            <strong>Total Institute Expenses</strong>
+                            <h3 style="color: #ef4444; margin-top:0.5rem; font-size: 2rem;">₹<span
+                                    id="globalExpStr">0</span></h3>
+                            <small class="text-muted">All Time</small>
+                        </div>
+                        <div class="info-item"
+                            style="text-align: center; grid-column: span 2; margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 1rem;">
+                            <strong style="font-size: 1.2rem;">Net Institute Profit</strong>
+                            <h2 style="color: #6366f1; margin-top:0.5rem; font-size: 2.5rem;">₹<span
+                                    id="globalProfitStr">0</span></h2>
+                        </div>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="globalFeeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 1.5rem;">Student Fee Operations</h3>
+                <div class="form-grid" style="align-items: end;">
+                    <div class="form-group">
+                        <label>Student Registration Number</label>
+                        <input type="text" id="feeRegNo" placeholder="e.g. LCI001">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-secondary" onclick="searchFeeStudent()">Search Student</button>
+                    </div>
+                </div>
+
+                <div id="feeStudentDetails"
+                    style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                    <h3 id="fsName" style="color: var(--secondary); margin-bottom: 1rem;"></h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="info-item" style="margin:0;"><strong>Total Fee:</strong> ₹<span id="fsTotal"></span>
+                        </div>
+                        <div class="info-item" style="margin:0;"><strong>Paid Fee:</strong> ₹<span id="fsPaid"></span>
+                        </div>
+                        <div class="info-item" style="margin:0;"><strong>Balance:</strong> ₹<span id="fsBalance"></span>
+                        </div>
+                    </div>
+
+                    <form id="feeForm" class="contact-form" style="padding: 1.5rem; background: rgba(0,0,0,0.2);">
+                        <h4>Add New Payment</h4>
+                        <div class="form-grid" style="margin-top: 1rem; align-items: end;">
+                            <div class="form-group" style="margin:0;">
+                                <label>Amount (₹)</label>
+                                <input type="number" id="feeAmount" required>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Date</label>
+                                <input type="date" id="feeDate" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Fee</button>
+                        </div>
+                    </form>
+
+                    <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Payment History</h4>
+                    <table class="data-table" id="feeHistoryTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Receipt No</th>
+                                <th>Amount Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Attendance Panel -->
+        <section id="panel-attendance" class="panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2>Attendance Management</h2>
+                    <p class="text-muted">Mark daily attendance and generate reports.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="generateAttendanceReport()">📄 Print Monthly Report</button>
+            </div>
+            <div class="card">
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr 2fr;">
+                    <div class="form-group">
+                        <label>Select Date</label>
+                        <input type="date" id="attDate">
+                    </div>
+                </div>
+
+                <table class="data-table" id="attendanceTable" style="margin-top: 2rem;">
+                    <thead>
+                        <tr>
+                            <th>Reg No</th>
+                            <th>Student Name</th>
+                            <th>Course</th>
+                            <th>Action (Status for Today)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Hidden Printable Report -->
+            <div id="printReportArea"
+                style="display: none; background: white; color: black; padding: 2rem; position: absolute; top:0; left:0; width:100%; min-height:100vh; z-index:9999;">
+                <div style="text-align:center; margin-bottom:2rem;">
+                    <h1>LAKSHYA COMPUTER INSTITUTE</h1>
+                    <h2>Monthly Attendance Report</h2>
+                    <p id="reportMonthLabel"></p>
+                </div>
+                <table style="width:100%; border-collapse: collapse; border: 1px solid black;" id="printTable">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid black; padding: 8px;">Reg No</th>
+                            <th style="border: 1px solid black; padding: 8px;">Name</th>
+                            <th style="border: 1px solid black; padding: 8px;">Total Present</th>
+                            <th style="border: 1px solid black; padding: 8px;">Total Absent</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div style="margin-top: 4rem; text-align: right;">
+                    <p>__________________________</p>
+                    <p><strong>Authorized Signatory</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notes Panel -->
+        <section id="panel-notes" class="panel">
+            <div class="panel-header">
+                <h2>Study Notes Management</h2>
+                <p class="text-muted">Upload and manage study material for students.</p>
+            </div>
+            <div class="card" style="margin-bottom: 2rem;">
+                <form id="uploadNoteForm" class="contact-form"
+                    style="padding: 0; border: none; background: transparent;">
+                    <div class="form-grid" style="align-items: end;">
+                        <div class="form-group" style="margin: 0;">
+                            <label>Note Title</label>
+                            <input type="text" id="noteTitle" required>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Target Course</label>
+                            <select id="noteCourse" required
+                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;">
+                                <option value="All">All Courses</option>
+                                <option value="ADCA Plus">ADCA Plus</option>
+                                <option value="ADCA">ADCA</option>
+                                <option value="DCA">DCA</option>
+                                <option value="DFA">DFA</option>
+                                <option value="ADFA">ADFA</option>
+                                <option value="Tally Prime">Tally Prime</option>
+                                <option value="O Level">O Level</option>
+                                <option value="Computer Basic">Computer Basic</option>
+                                <option value="Advance Excel">Advance Excel</option>
+                                <option value="DTP">DTP</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Upload File</label>
+                            <input type="file" id="noteFile" required style="padding: 0.8rem;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <button type="submit" class="btn btn-primary btn-block">Upload</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="notesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Title</th>
+                            <th>Course</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Notifications Panel -->
+        <section id="panel-notifications" class="panel">
+            <div class="panel-header">
+                <h2>Notifications Management</h2>
+                <p class="text-muted">Post important announcements for students.</p>
+            </div>
+            <div class="card" style="margin-bottom: 2rem;">
+                <form id="notificationForm" class="contact-form"
+                    style="padding: 0; border: none; background: transparent;">
+                    <div class="form-grid" style="align-items: end;">
+                        <div class="form-group" style="grid-column: span 2; margin: 0;">
+                            <label>Message</label>
+                            <input type="text" id="notifMessage" required placeholder="Enter notification message...">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Target Course</label>
+                            <select id="notifCourse" required
+                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;">
+                                <option value="All">All Courses</option>
+                                <option value="ADCA Plus">ADCA Plus</option>
+                                <option value="ADCA">ADCA</option>
+                                <option value="DCA">DCA</option>
+                                <option value="DFA">DFA</option>
+                                <option value="ADFA">ADFA</option>
+                                <option value="Tally Prime">Tally Prime</option>
+                                <option value="O Level">O Level</option>
+                                <option value="Computer Basic">Computer Basic</option>
+                                <option value="Advance Excel">Advance Excel</option>
+                                <option value="DTP">DTP</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <button type="submit" class="btn btn-primary btn-block">Post</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="notificationsTable">
+                    <thead>
+                        <tr>
+                            <th>Date Posted</th>
+                            <th>Message</th>
+                            <th>Target</th>
+                            <th>Status / Expiry</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Video Lectures Panel -->
+        <section id="panel-videos" class="panel">
+            <div class="panel-header">
+                <h2>Video Lectures Management</h2>
+                <p class="text-muted">Embed YouTube video lectures for targeted courses.</p>
+            </div>
+            <div class="card" style="margin-bottom: 2rem;">
+                <form id="videoForm" class="contact-form" style="padding: 0; border: none; background: transparent;">
+                    <div class="form-grid" style="align-items: end;">
+                        <div class="form-group" style="margin: 0;">
+                            <label>Video Title</label>
+                            <input type="text" id="vidTitle" required placeholder="e.g. Intro to HTML5">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>YouTube Link</label>
+                            <input type="url" id="vidLink" required placeholder="https://youtube.com/watch?v=...">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Target Course</label>
+                            <select id="vidCourse" required
+                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;">
+                                <option value="All">All Courses</option>
+                                <option value="ADCA Plus">ADCA Plus</option>
+                                <option value="ADCA">ADCA</option>
+                                <option value="DCA">DCA</option>
+                                <option value="DFA">DFA</option>
+                                <option value="ADFA">ADFA</option>
+                                <option value="Tally Prime">Tally Prime</option>
+                                <option value="O Level">O Level</option>
+                                <option value="Computer Basic">Computer Basic</option>
+                                <option value="Advance Excel">Advance Excel</option>
+                                <option value="DTP">DTP</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <button type="submit" class="btn btn-primary btn-block">Add Video</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="videosTable">
+                    <thead>
+                        <tr>
+                            <th>Date Posted</th>
+                            <th>Thumbnail</th>
+                            <th>Title</th>
+                            <th>Course</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Exam Results Panel -->
+        <section id="panel-results" class="panel">
+            <div class="panel-header">
+                <h2>Exam Results Management</h2>
+                <p class="text-muted">View offline marks or check online MCQ test performance.</p>
+            </div>
+
+            <div class="card mb-4">
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr auto; align-items: end;">
+                    <div class="form-group">
+                        <label>Search by Reg No.</label>
+                        <input type="text" id="resSearchRegNo" placeholder="LCI001">
+                    </div>
+                    <div class="form-group">
+                        <label>Filter by Course</label>
+                        <select id="resFilterCourse">
+                            <option value="All">All Courses</option>
+                            <option value="ADCA Plus">ADCA Plus</option>
+                            <option value="ADCA">ADCA</option>
+                            <option value="DCA">DCA</option>
+                            <option value="DFA">DFA</option>
+                            <option value="ADFA">ADFA</option>
+                            <option value="Tally Prime">Tally Prime</option>
+                            <option value="O Level">O Level</option>
+                            <option value="Computer Basic">Computer Basic</option>
+                            <option value="Advance Excel">Advance Excel</option>
+                            <option value="DTP">DTP</option>
+                            <option value="Web Development">Web Development</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" onclick="searchAllResults()">View Online Results</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4" style="padding:0; overflow-x:auto;">
+                <table class="data-table" id="onlineResultsTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Exam Name</th>
+                            <th>Score</th>
+                            <th>%</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Offline Marks Entry</h3>
+                <div class="form-grid" style="align-items: end;">
+                    <div class="form-group">
+                        <label>Student Reg No</label>
+                        <input type="text" id="resRegNo" placeholder="E.g. LCI001">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-secondary" onclick="searchResultStudent()">Search Student</button>
+                    </div>
+                </div>
+
+                <div id="resStudentDetails"
+                    style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                    <h3 id="rsName" style="color: var(--secondary); margin-bottom: 1rem;"></h3>
+
+                    <form id="resultForm" class="contact-form" style="padding: 1.5rem; background: rgba(0,0,0,0.2);">
+                        <h4>Add New Result</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Subject / Module Name</label>
+                                <input type="text" id="resSubject" required placeholder="E.g. HTML Final Exam">
+                            </div>
+                            <div class="form-group">
+                                <label>Maximum Marks</label>
+                                <input type="number" id="resMaxMarks" required value="100" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Marks Scored</label>
+                                <input type="number" id="resScored" required min="0">
+                            </div>
+                            <div class="form-group" style="align-self: end;">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Result</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Past Offline Results</h4>
+                    <table class="data-table" id="resHistoryTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Max</th>
+                                <th>Scored</th>
+                                <th>%</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enquiries Panel -->
+        <section id="panel-enquiries" class="panel">
+            <div class="panel-header">
+                <h2>Enquiry & Lead Management</h2>
+                <p class="text-muted">Track visitors and follow up for admissions.</p>
+            </div>
+
+            <div class="card mb-4">
+                <form id="enquiryForm" class="contact-form form-grid" style="align-items: end;">
+                    <div class="form-group">
+                        <label>Visitor/Student Name</label>
+                        <input type="text" id="enqName" required placeholder="Full Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="tel" id="enqContact" required placeholder="Phone Number">
+                    </div>
+                    <div class="form-group">
+                        <label>Interested Course</label>
+                        <select id="enqCourse" required>
+                            <option value="">Select Course</option>
+                            <option value="ADCA Plus">ADCA Plus</option>
+                            <option value="ADCA">ADCA</option>
+                            <option value="DCA">DCA</option>
+                            <option value="DFA">DFA</option>
+                            <option value="ADFA">ADFA</option>
+                            <option value="Tally Prime">Tally Prime</option>
+                            <option value="O Level">O Level</option>
+                            <option value="Computer Basic">Computer Basic</option>
+                            <option value="Advance Excel">Advance Excel</option>
+                            <option value="DTP">DTP</option>
+                            <option value="Web Development">Web Development</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Add Enquiry</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="enquiriesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Contact</th>
+                            <th>Course</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Online Exam Panel -->
+        <section id="panel-onlineexam" class="panel">
+            <div class="panel-header">
+                <h2>Online MCQ Exam Management</h2>
+                <p class="text-muted">Create exams by uploading Excel files. Question in Col A, Options in B-E, Correct Ans in F.</p>
+            </div>
+            <div class="card">
+                <form id="examCreateForm" class="contact-form" style="padding:0; border:none; background:transparent;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Test Name</label>
+                            <input type="text" id="examName" required placeholder="e.g. HTML Basics 01">
+                        </div>
+                        <div class="form-group">
+                            <label>Target Course</label>
+                            <select id="examCourse" required
+                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;">
+                                <option value="All">All Courses</option>
+                                <option value="ADCA Plus">ADCA Plus</option>
+                                <option value="ADCA">ADCA</option>
+                                <option value="DCA">DCA</option>
+                                <option value="DFA">DFA</option>
+                                <option value="ADFA">ADFA</option>
+                                <option value="Tally Prime">Tally Prime</option>
+                                <option value="O Level">O Level</option>
+                                <option value="Computer Basic">Computer Basic</option>
+                                <option value="Advance Excel">Advance Excel</option>
+                                <option value="DTP">DTP</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Exam Date</label>
+                            <input type="date" id="examDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Expiry Time (Date & Time)</label>
+                            <input type="datetime-local" id="examExpiry" required>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Upload Questions (Excel File)</label>
+                            <input type="file" id="examExcelFile" accept=".xlsx, .xls" required style="padding: 0.8rem;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Create Exam</button>
+                </form>
+            </div>
+
+            <div class="card mt-4" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="examsListTable">
+                    <thead>
+                        <tr>
+                            <th>Exam Name</th>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+
+
+        <!-- Expenses Panel -->
+        <section id="panel-expenses" class="panel">
+            <div class="panel-header">
+                <h2>Expense Tracker</h2>
+                <p class="text-muted">Log daily institute costs like rent, salaries, and marketing.</p>
+            </div>
+
+            <div class="card mb-4"
+                style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2);">
+                <form id="expenseForm" class="contact-form form-grid" style="align-items: end;">
+                    <div class="form-group">
+                        <label>Expense Title / Description</label>
+                        <input type="text" id="expTitle" required placeholder="E.g. Electricity Bill June">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (₹)</label>
+                        <input type="number" id="expAmount" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="expCategory" required>
+                            <option value="Rent">Rent</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Utilities">Utilities & Bills</option>
+                            <option value="Marketing">Marketing / Ads</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Misc">Miscellaneous</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-secondary"
+                            style="width: 100%; border-color: #ef4444; color: #ef4444;">Log Expense</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="padding: 0; overflow-x: auto;">
+                <table class="data-table" id="expensesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Student Modal -->
+    <div id="editModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <h3>Edit Student</h3>
+                <button onclick="closeEditModal()" class="btn btn-secondary" style="padding: 0.3rem 0.8rem;">X</button>
+            </div>
+            <form id="editForm" class="contact-form" style="padding: 0; border: none; background: transparent;">
+                <input type="hidden" id="editRegNo">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Father's Name</label>
+                        <input type="text" id="editFather" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number (Password)</label>
+                        <input type="tel" id="editContact" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Course Opted</label>
+                        <select id="editCourse" required
+                            style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;">
+                            <option value="ADCA Plus">ADCA Plus</option>
+                            <option value="ADCA">ADCA</option>
+                            <option value="DCA">DCA</option>
+                            <option value="DFA">DFA</option>
+                            <option value="ADFA">ADFA</option>
+                            <option value="Tally Prime">Tally Prime</option>
+                            <option value="O Level">O Level</option>
+                            <option value="Computer Basic">Computer Basic</option>
+                            <option value="Advance Excel">Advance Excel</option>
+                            <option value="DTP">DTP</option>
+                            <option value="Web Development">Web Development</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Address</label>
+                        <textarea id="editAddress" rows="2"
+                            style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; color: white;"
+                            required></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        // Check Access
+        const user = getCurrentUser();
+        if (!user || user.role !== 'admin') {
+            window.location.href = 'login.html';
+        }
+
+        // Set default dates
+        document.getElementById('feeDate').valueAsDate = new Date();
+        document.getElementById('attDate').valueAsDate = new Date();
+
+        function switchPanel(panelId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
+            document.getElementById('panel-' + panelId).classList.add('active');
+            event.target.classList.add('active');
+
+            if (panelId === 'admission') renderStudentsTable();
+            if (panelId === 'attendance') renderAttendanceTable();
+            if (panelId === 'notes') renderNotesTable();
+            if (panelId === 'videos') renderVideosTable();
+            if (panelId === 'notifications') renderNotificationsTable();
+            if (panelId === 'results') {
+                document.getElementById('resStudentDetails').style.display = 'none';
+                searchAllResults();
+            }
+            if (panelId === 'onlineexam') renderExamsList();
+            if (panelId === 'enquiries') renderEnquiriesTable();
+            if (panelId === 'expenses') renderExpensesTable();
+            if (panelId === 'fees') renderGlobalFeeStats();
+        }
+
+
+        // --- Online Exam Admin Logic ---
+        document.getElementById('examCreateForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('examExcelFile');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheet];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // Process questions (Skip header row 0)
+                const questions = [];
+                try {
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (row && row[0]) { // If question exists
+                            const correctLetter = String(row[5] || "").trim().toUpperCase();
+                            const ansIndex = ['A', 'B', 'C', 'D'].indexOf(correctLetter);
+                            
+                            questions.push({
+                                q: row[0],
+                                options: [row[1], row[2], row[3], row[4]],
+                                ans: ansIndex // Store as index 0-3
+                            });
+                        }
+                    }
+
+                    if (questions.length === 0) {
+                        alert("No valid questions found in the Excel file. Please check the format (Question in Col A).");
+                        return;
+                    }
+
+                    const db = getDB();
+                    if (!db.onlineExams) db.onlineExams = [];
+
+                    const exam = {
+                        id: Date.now().toString(),
+                        name: document.getElementById('examName').value,
+                        course: document.getElementById('examCourse').value,
+                        date: document.getElementById('examDate').value,
+                        expiry: document.getElementById('examExpiry').value,
+                        questions: questions,
+                        published: false,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    db.onlineExams.push(exam);
+                    saveDB(db);
+
+                    alert('Exam created successfully with ' + questions.length + ' questions!');
+                    document.getElementById('examCreateForm').reset();
+                    renderExamsList();
+                } catch (err) {
+                    console.error(err);
+                    alert("Error processing Excel file: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function renderExamsList() {
+            const db = getDB();
+            const tbody = document.querySelector('#examsListTable tbody');
+            tbody.innerHTML = '';
+
+            db.onlineExams.slice().reverse().forEach(exam => {
+                const isPublished = exam.published ? '<span style="color:#10b981">Published</span>' : '<span style="color:#f59e0b">Draft</span>';
+                const publishBtnText = exam.published ? 'Unpublish' : 'Publish';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${exam.name}</strong></td>
+                        <td>${exam.course}</td>
+                        <td>${exam.date}</td>
+                        <td style="font-size:0.8rem;">${new Date(exam.expiry).toLocaleString()}</td>
+                        <td>${isPublished}</td>
+                        <td>
+                            <button class="btn btn-primary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="togglePublish('${exam.id}')">${publishBtnText}</button>
+                            <button class="btn btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444; margin-left:0.3rem;" onclick="deleteExam('${exam.id}')">Del</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function togglePublish(id) {
+            const db = getDB();
+            const idx = db.onlineExams.findIndex(x => x.id === id);
+            if (idx !== -1) {
+                db.onlineExams[idx].published = !db.onlineExams[idx].published;
+                saveDB(db);
+                renderExamsList();
+            }
+        }
+
+        function deleteExam(id) {
+            if (confirm("Delete this exam and all associated results?")) {
+                const db = getDB();
+                db.onlineExams = db.onlineExams.filter(x => x.id !== id);
+                // Also clean up student results for this exam
+                db.students.forEach(s => {
+                    if (s.examResults) {
+                        s.examResults = s.examResults.filter(r => r.examId !== id);
+                    }
+                });
+                saveDB(db);
+                renderExamsList();
+            }
+        }
+
+
+
+        // --- Admission Logic ---
+        document.getElementById('admissionForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const photoFile = document.getElementById('stuPhoto').files[0];
+
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    processAdmission(evt.target.result);
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                processAdmission('');
+            }
+        });
+
+        function processAdmission(photoData) {
+            const db = getDB();
+            const regNo = generateRegNo(db);
+            const courseFee = parseFloat(document.getElementById('stuFee').value);
+            const adminAmountStr = document.getElementById('feePaid').value;
+            const feePaid = adminAmountStr ? parseFloat(adminAmountStr) : 0;
+            const feeBalance = courseFee - feePaid;
+
+            const newStudent = {
+                regNo: regNo,
+                name: document.getElementById('stuName').value,
+                fatherName: document.getElementById('stuFather').value,
+                contact: document.getElementById('stuContact').value,
+                course: document.getElementById('stuCourse').value,
+                batch: 'None',
+                address: document.getElementById('stuAddress').value,
+                photo: photoData,
+                courseFee: courseFee,
+                balanceFee: feeBalance,
+                fees: feePaid > 0 ? [{ date: new Date().toISOString().split('T')[0], amount: feePaid, receiptNo: 'INITIAL' }] : [],
+                attendance: {},
+                examResults: []
+            };
+
+            db.students.push(newStudent);
+            saveDB(db);
+            alert(`Admission successful! Registration Number is ${regNo}`);
+            document.getElementById('admissionForm').reset();
+            renderStudentsTable();
+        }
+
+        function renderStudentsTable() {
+            const db = getDB();
+            const filterEl = document.getElementById('filterCourse');
+            const filter = filterEl ? filterEl.value : 'All';
+            const tbody = document.querySelector('#studentsTable tbody');
+            tbody.innerHTML = '';
+
+            let filteredStudents = db.students.slice();
+            if (filter !== 'All') {
+                filteredStudents = filteredStudents.filter(s => s.course === filter);
+            }
+
+            filteredStudents.reverse().forEach(s => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${s.regNo}</strong></td>
+                        <td>${s.name}</td>
+                        <td>${s.course}</td>
+                        <td>${s.contact}</td>
+                        <td style="color: ${s.balanceFee > 0 ? '#ef4444' : '#10b981'}">₹${s.balanceFee}</td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.9rem;" onclick="openEditModal('${s.regNo}')">Edit</button>
+                            <button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.9rem; border-color: #ef4444; color: #ef4444; margin-left: 0.5rem;" onclick="deleteStudent('${s.regNo}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteStudent(regNo) {
+            if (confirm("Are you sure you want to permanently delete this student along with all their fee and attendance records? This action cannot be undone.")) {
+                const db = getDB();
+                db.students = db.students.filter(s => s.regNo !== regNo);
+                saveDB(db);
+                renderStudentsTable();
+
+                // If on fees panel, refresh global stats
+                if (document.getElementById('panel-fees').classList.contains('active')) {
+                    renderGlobalFeeStats();
+                }
+
+                alert("Student deleted successfully.");
+
+                // If the deleted student was currently being viewed in fee panel, hide it
+                if (currentFeeStudent && currentFeeStudent.regNo === regNo) {
+                    document.getElementById('feeStudentDetails').style.display = 'none';
+                    currentFeeStudent = null;
+                }
+            }
+        }
+
+        // --- Edit Student Logic ---
+        function openEditModal(regNo) {
+            const db = getDB();
+            const student = db.students.find(s => s.regNo === regNo);
+            if (student) {
+                document.getElementById('editRegNo').value = student.regNo;
+                document.getElementById('editName').value = student.name;
+                document.getElementById('editFather').value = student.fatherName;
+                document.getElementById('editContact').value = student.contact;
+                document.getElementById('editCourse').value = student.course;
+                document.getElementById('editAddress').value = student.address;
+                document.getElementById('editModal').style.display = 'flex';
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        document.getElementById('editForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const db = getDB();
+            const regNo = document.getElementById('editRegNo').value;
+            const studentIndex = db.students.findIndex(s => s.regNo === regNo);
+
+            if (studentIndex !== -1) {
+                db.students[studentIndex].name = document.getElementById('editName').value;
+                db.students[studentIndex].fatherName = document.getElementById('editFather').value;
+                db.students[studentIndex].contact = document.getElementById('editContact').value;
+                db.students[studentIndex].course = document.getElementById('editCourse').value;
+                db.students[studentIndex].address = document.getElementById('editAddress').value;
+
+                saveDB(db);
+                alert('Student details updated successfully!');
+                closeEditModal();
+                renderStudentsTable();
+            }
+        });
+
+        // --- Notes Logic ---
+        document.getElementById('uploadNoteForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('noteFile');
+            if (fileInput.files.length === 0) return;
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (evt) {
+                const db = getDB();
+                if (!db.notes) db.notes = [];
+
+                db.notes.push({
+                    id: Date.now().toString(),
+                    title: document.getElementById('noteTitle').value,
+                    course: document.getElementById('noteCourse').value,
+                    fileName: file.name,
+                    data: evt.target.result,
+                    date: new Date().toISOString().split('T')[0]
+                });
+
+                saveDB(db);
+                alert('Note uploaded successfully!');
+                document.getElementById('uploadNoteForm').reset();
+                renderNotesTable();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function renderNotesTable() {
+            const db = getDB();
+            if (!db.notes) return;
+
+            const tbody = document.querySelector('#notesTable tbody');
+            tbody.innerHTML = '';
+
+            db.notes.slice().reverse().forEach(n => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${n.date}</td>
+                        <td>${n.title} (${n.fileName})</td>
+                        <td>${n.course}</td>
+                        <td><button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.9rem; border-color: #ef4444; color: #ef4444;" onclick="deleteNote('${n.id}')">Delete</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteNote(id) {
+            if (confirm("Are you sure you want to delete this note?")) {
+                const db = getDB();
+                db.notes = db.notes.filter(n => n.id !== id);
+                saveDB(db);
+                renderNotesTable();
+            }
+        }
+
+        // --- Video Lectures Logic ---
+        function extractYouTubeID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        document.getElementById('videoForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const db = getDB();
+            if (!db.videos) db.videos = [];
+
+            const url = document.getElementById('vidLink').value;
+            const videoId = extractYouTubeID(url);
+
+            if (!videoId) {
+                alert("Invalid YouTube URL. Please enter a valid link.");
+                return;
+            }
+
+            db.videos.push({
+                id: Date.now().toString(),
+                videoId: videoId,
+                title: document.getElementById('vidTitle').value,
+                course: document.getElementById('vidCourse').value,
+                datePosted: new Date().toISOString().split('T')[0]
+            });
+
+            saveDB(db);
+            alert('YouTube video embedded successfully!');
+            this.reset();
+            renderVideosTable();
+        });
+
+        function renderVideosTable() {
+            const db = getDB();
+            if (!db.videos) return;
+
+            const tbody = document.querySelector('#videosTable tbody');
+            tbody.innerHTML = '';
+
+            db.videos.slice().reverse().forEach(v => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${v.datePosted}</td>
+                        <td><img src="https://img.youtube.com/vi/${v.videoId}/default.jpg" style="height: 50px; border-radius: 5px;" alt="thumbnail"></td>
+                        <td><strong>${v.title}</strong><br><small class="text-muted">ID: ${v.videoId}</small></td>
+                        <td>${v.course}</td>
+                        <td><button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.9rem; border-color: #ef4444; color: #ef4444;" onclick="deleteVideo('${v.id}')">Delete</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteVideo(id) {
+            if (confirm("Are you sure you want to remove this video?")) {
+                const db = getDB();
+                db.videos = db.videos.filter(v => v.id !== id);
+                saveDB(db);
+                renderVideosTable();
+            }
+        }
+
+        // --- Notifications Logic ---
+        document.getElementById('notificationForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const db = getDB();
+            if (!db.notifications) db.notifications = [];
+
+            const message = document.getElementById('notifMessage').value;
+            const course = document.getElementById('notifCourse').value;
+            const now = new Date();
+            const expiry = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+            db.notifications.push({
+                id: Date.now().toString(),
+                message: message,
+                course: course,
+                datePosted: now.toISOString().split('T')[0],
+                expiryTimestamp: expiry.getTime()
+            });
+
+            saveDB(db);
+            alert('Notification posted! It will expire in exactly 7 days.');
+            this.reset();
+            renderNotificationsTable();
+        });
+
+        function renderNotificationsTable() {
+            const db = getDB();
+            if (!db.notifications) return;
+
+            const tbody = document.querySelector('#notificationsTable tbody');
+            tbody.innerHTML = '';
+            const now = Date.now();
+
+            db.notifications.slice().reverse().forEach(n => {
+                const isExpired = now > n.expiryTimestamp;
+                const status = isExpired ? '<span style="color:#ef4444">Expired</span>' : '<span style="color:#10b981">Active (' + new Date(n.expiryTimestamp).toLocaleDateString() + ')</span>';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${n.datePosted}</td>
+                        <td>${n.message}</td>
+                        <td>${n.course}</td>
+                        <td>${status}</td>
+                        <td><button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.9rem; border-color: #ef4444; color: #ef4444;" onclick="deleteNotification('${n.id}')">Delete</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteNotification(id) {
+            if (confirm("Are you sure you want to delete this notification?")) {
+                const db = getDB();
+                db.notifications = db.notifications.filter(n => n.id !== id);
+                saveDB(db);
+                renderNotificationsTable();
+            }
+        }
+
+        // --- Fee Logic ---
+        let currentFeeStudent = null;
+        let globalFeeChartInstance = null;
+
+        function renderGlobalFeeStats() {
+            const db = getDB();
+            let total = 0;
+            let paid = 0;
+            let balance = 0;
+
+            db.students.forEach(s => {
+                total += s.courseFee;
+                balance += s.balanceFee;
+                paid += (s.courseFee - s.balanceFee);
+            });
+
+            let totalExp = 0;
+            if (db.expenses) {
+                db.expenses.forEach(e => {
+                    totalExp += e.amount;
+                });
+            }
+
+            const netProfit = paid - totalExp;
+
+            document.getElementById('globalTotalStr').innerText = total;
+            document.getElementById('globalPaidStr').innerText = paid;
+            document.getElementById('globalExpStr').innerText = totalExp;
+            document.getElementById('globalProfitStr').innerText = netProfit;
+
+            const ctx = document.getElementById('globalFeeChart').getContext('2d');
+            if (globalFeeChartInstance) {
+                globalFeeChartInstance.destroy();
+            }
+
+            globalFeeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Net Profit', 'Total Expenses'],
+                    datasets: [{
+                        data: [Math.max(0, netProfit), totalExp],
+                        backgroundColor: ['#6366f1', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { position: 'right', labels: { color: 'white', font: { family: "'Outfit', sans-serif" } } }
+                    }
+                }
+            });
+        }
+
+        function searchFeeStudent() {
+            const regNo = document.getElementById('feeRegNo').value.trim();
+            const db = getDB();
+            const student = db.students.find(s => s.regNo === regNo);
+
+            if (student) {
+                currentFeeStudent = student;
+                document.getElementById('feeStudentDetails').style.display = 'block';
+                renderFeeStudentData();
+            } else {
+                alert("Student not found!");
+                document.getElementById('feeStudentDetails').style.display = 'none';
+            }
+        }
+
+        function renderFeeStudentData() {
+            if (!currentFeeStudent) return;
+            document.getElementById('fsName').innerText = `${currentFeeStudent.name} (${currentFeeStudent.course})`;
+            document.getElementById('fsTotal').innerText = currentFeeStudent.courseFee;
+            document.getElementById('fsBalance').innerText = currentFeeStudent.balanceFee;
+
+            const paid = currentFeeStudent.courseFee - currentFeeStudent.balanceFee;
+            document.getElementById('fsPaid').innerText = paid;
+
+            const tbody = document.querySelector('#feeHistoryTable tbody');
+            tbody.innerHTML = '';
+            currentFeeStudent.fees.forEach(f => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${f.date}</td>
+                        <td><strong>${f.receiptNo}</strong></td>
+                        <td style="color: #10b981;">+ ₹${f.amount}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('feeForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!currentFeeStudent) return;
+
+            const amt = parseFloat(document.getElementById('feeAmount').value);
+            const date = document.getElementById('feeDate').value;
+
+            if (amt > currentFeeStudent.balanceFee) {
+                alert("Amount exceeds balance fee!");
+                return;
+            }
+
+            const db = getDB();
+            const recNo = generateReceiptNo(db);
+            const studentIdx = db.students.findIndex(s => s.regNo === currentFeeStudent.regNo);
+
+            db.students[studentIdx].fees.push({ date, amount: amt, receiptNo: recNo });
+            db.students[studentIdx].balanceFee -= amt;
+            saveDB(db);
+
+            currentFeeStudent = db.students[studentIdx];
+            renderFeeStudentData();
+            renderGlobalFeeStats(); // Update global chart with new payment
+            this.reset();
+            document.getElementById('feeDate').valueAsDate = new Date();
+            alert(`Fee added! Receipt No: ${recNo}`);
+        });
+
+
+
+        // --- Exam Results Logic ---
+        let currentResultStudent = null;
+
+        function searchResultStudent() {
+            const regNo = document.getElementById('resRegNo').value.trim();
+            const db = getDB();
+            const student = db.students.find(s => s.regNo === regNo);
+
+            if (student) {
+                currentResultStudent = student;
+                document.getElementById('resStudentDetails').style.display = 'block';
+                renderResultData();
+            } else {
+                alert("Student not found!");
+                document.getElementById('resStudentDetails').style.display = 'none';
+            }
+        }
+
+        function renderResultData() {
+            if (!currentResultStudent) return;
+            document.getElementById('rsName').innerText = `${currentResultStudent.name} (${currentResultStudent.course})`;
+
+            const tbody = document.querySelector('#resHistoryTable tbody');
+            tbody.innerHTML = '';
+
+            if (!currentResultStudent.exams) currentResultStudent.exams = [];
+
+            currentResultStudent.exams.forEach((ex, idx) => {
+                const percentage = ((ex.scored / ex.max) * 100).toFixed(1);
+                let color = percentage >= 40 ? '#10b981' : '#ef4444'; // Green if pass, Red if fail
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${ex.date}</td>
+                        <td><strong>${ex.subject}</strong></td>
+                        <td>${ex.max}</td>
+                        <td style="color: ${color}; font-weight: 600;">${ex.scored}</td>
+                        <td>${percentage}%</td>
+                        <td><button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteResult('${currentResultStudent.regNo}', ${idx})">Del</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('resultForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!currentResultStudent) return;
+
+            const subject = document.getElementById('resSubject').value;
+            const max = parseInt(document.getElementById('resMaxMarks').value);
+            const scored = parseFloat(document.getElementById('resScored').value);
+
+            if (scored > max) {
+                alert("Scored marks cannot exceed maximum marks.");
+                return;
+            }
+
+            const db = getDB();
+            const studentIdx = db.students.findIndex(s => s.regNo === currentResultStudent.regNo);
+
+            if (!db.students[studentIdx].exams) db.students[studentIdx].exams = [];
+
+            db.students[studentIdx].exams.push({
+                date: new Date().toISOString().split('T')[0],
+                subject: subject,
+                max: max,
+                scored: scored
+            });
+
+            saveDB(db);
+            currentResultStudent = db.students[studentIdx];
+            renderResultData();
+            this.reset();
+            document.getElementById('resMaxMarks').value = 100;
+        });
+
+        function deleteResult(regNo, examIdx) {
+            if (confirm("Are you sure you want to delete this result?")) {
+                const db = getDB();
+                const studentIdx = db.students.findIndex(s => s.regNo === regNo);
+                db.students[studentIdx].exams.splice(examIdx, 1);
+                saveDB(db);
+                currentResultStudent = db.students[studentIdx];
+                renderResultData();
+            }
+        }
+
+        // --- Enquiries Logic ---
+        document.getElementById('enquiryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const db = getDB();
+            if (!db.enquiries) db.enquiries = [];
+
+            const enq = {
+                id: Date.now().toString(),
+                date: new Date().toISOString().split('T')[0],
+                name: document.getElementById('enqName').value.trim(),
+                contact: document.getElementById('enqContact').value.trim(),
+                course: document.getElementById('enqCourse').value
+            };
+
+            db.enquiries.push(enq);
+            saveDB(db);
+
+            alert('Enquiry logged successfully!');
+            this.reset();
+            renderEnquiriesTable();
+        });
+
+        function renderEnquiriesTable() {
+            const db = getDB();
+            if (!db.enquiries) return;
+
+            const tbody = document.querySelector('#enquiriesTable tbody');
+            tbody.innerHTML = '';
+
+            if (db.enquiries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No pending enquiries.</td></tr>';
+                return;
+            }
+
+            db.enquiries.slice().reverse().forEach(enq => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${enq.date}</td>
+                        <td><strong>${enq.name}</strong></td>
+                        <td>${enq.contact}</td>
+                        <td>${enq.course}</td>
+                        <td>
+                            <button class="btn btn-primary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; margin-right: 0.5rem;" onclick="convertEnquiry('${enq.id}')">Admit</button>
+                            <button class="btn btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteEnquiry('${enq.id}')">Del</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function convertEnquiry(id) {
+            const db = getDB();
+            const enq = db.enquiries.find(e => e.id === id);
+            if (enq) {
+                switchPanel('admission');
+                document.getElementById('stuName').value = enq.name;
+                document.getElementById('stuContact').value = enq.contact;
+                document.getElementById('stuCourse').value = enq.course;
+                document.getElementById('feePaid').value = 0; 
+                document.getElementById('stuFee').value = 0;
+                deleteEnquiry(id, false); // remove from leads without prompt
+                alert("Enquiry transferred! Please fill the remaining details and submit.");
+            }
+        }
+
+        function deleteEnquiry(id, prompt = true) {
+            if (prompt && !confirm("Delete this enquiry?")) return;
+            const db = getDB();
+            db.enquiries = db.enquiries.filter(e => e.id !== id);
+            saveDB(db);
+            if (document.getElementById('panel-enquiries').classList.contains('active')) {
+                renderEnquiriesTable();
+            }
+        }
+
+
+
+        // --- Expenses Logic ---
+        document.getElementById('expenseForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const db = getDB();
+            if (!db.expenses) db.expenses = [];
+
+            const exp = {
+                id: Date.now().toString(),
+                date: new Date().toISOString().split('T')[0],
+                title: document.getElementById('expTitle').value.trim(),
+                amount: parseFloat(document.getElementById('expAmount').value),
+                category: document.getElementById('expCategory').value
+            };
+
+            db.expenses.push(exp);
+            saveDB(db);
+
+            alert('Expense logged successfully!');
+            this.reset();
+            renderExpensesTable();
+            renderGlobalFeeStats(); // Update chart
+        });
+
+        function renderExpensesTable() {
+            const db = getDB();
+            if (!db.expenses) return;
+
+            const tbody = document.querySelector('#expensesTable tbody');
+            tbody.innerHTML = '';
+
+            db.expenses.slice().reverse().forEach(e => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${e.date}</td>
+                        <td><strong>${e.title}</strong></td>
+                        <td><span style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem;">${e.category}</span></td>
+                        <td style="color: #ef4444; font-weight: bold;">₹${e.amount}</td>
+                        <td><button class="btn btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteExpense('${e.id}')">Del</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteExpense(id) {
+            if (confirm("Are you sure you want to delete this expense record?")) {
+                const db = getDB();
+                db.expenses = db.expenses.filter(e => e.id !== id);
+                saveDB(db);
+                renderExpensesTable();
+                renderGlobalFeeStats();
+            }
+        }
+
+        // --- Attendance Logic ---
+        document.getElementById('attDate').addEventListener('change', renderAttendanceTable);
+
+        function renderAttendanceTable() {
+            const db = getDB();
+            const dateStr = document.getElementById('attDate').value; // YYYY-MM-DD
+            if (!dateStr) return;
+
+            const parts = dateStr.split('-');
+            const monthKey = `${parts[0]}-${parts[1]}`;
+            const dayKey = parts[2];
+
+            const tbody = document.querySelector('#attendanceTable tbody');
+            tbody.innerHTML = '';
+
+            db.students.forEach(s => {
+                let status = '';
+                if (s.attendance && s.attendance[monthKey] && s.attendance[monthKey][dayKey]) {
+                    status = s.attendance[monthKey][dayKey];
+                }
+
+                const pClass = status === 'P' ? 'btn-primary' : 'btn-secondary';
+                const aClass = status === 'A' ? 'btn-primary' : 'btn-secondary';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${s.regNo}</td>
+                        <td>${s.name}</td>
+                        <td>${s.course}</td>
+                        <td>
+                            <button class="btn ${pClass}" style="padding: 0.5rem 1rem;" onclick="markAtt('${s.regNo}', '${monthKey}', '${dayKey}', 'P')">P (Present)</button>
+                            <button class="btn ${aClass}" style="padding: 0.5rem 1rem; margin-left:0.5rem; ${status === 'A' ? 'background:#ef4444; border-color:#ef4444;' : ''}" onclick="markAtt('${s.regNo}', '${monthKey}', '${dayKey}', 'A')">A (Absent)</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function markAtt(regNo, month, day, status) {
+            const db = getDB();
+            const student = db.students.find(s => s.regNo === regNo);
+            if (!student.attendance) student.attendance = {};
+            if (!student.attendance[month]) student.attendance[month] = {};
+
+            student.attendance[month][day] = status;
+            saveDB(db);
+            renderAttendanceTable();
+        }
+
+        function generateAttendanceReport() {
+            const db = getDB();
+            const dateStr = document.getElementById('attDate').value;
+            if (!dateStr) return;
+            const parts = dateStr.split('-');
+            const monthKey = `${parts[0]}-${parts[1]}`;
+
+            document.getElementById('reportMonthLabel').innerText = `Month: ${monthKey}`;
+            const tbody = document.querySelector('#printTable tbody');
+            tbody.innerHTML = '';
+
+            db.students.forEach(s => {
+                let presents = 0, absents = 0;
+                if (s.attendance && s.attendance[monthKey]) {
+                    Object.values(s.attendance[monthKey]).forEach(val => {
+                        if (val === 'P') presents++;
+                        if (val === 'A') absents++;
+                    });
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="border: 1px solid black; padding: 8px;">${s.regNo}</td>
+                        <td style="border: 1px solid black; padding: 8px;">${s.name}</td>
+                        <td style="border: 1px solid black; padding: 8px;">${presents} Days</td>
+                        <td style="border: 1px solid black; padding: 8px;">${absents} Days</td>
+                    </tr>
+                `;
+            });
+
+            const printArea = document.getElementById('printReportArea');
+            printArea.style.display = 'block';
+            window.print();
+            printArea.style.display = 'none';
+        }
+
+        // Initialize
+        renderStudentsTable();
+
+        function searchAllResults() {
+            const db = getDB();
+            const searchReg = document.getElementById('resSearchRegNo').value.trim().toLowerCase();
+            const filterCourse = document.getElementById('resFilterCourse').value;
+            const tbody = document.querySelector('#onlineResultsTable tbody');
+            tbody.innerHTML = '';
+
+            if (!db.onlineExams) db.onlineExams = [];
+
+            db.students.forEach(student => {
+                if (filterCourse !== 'All' && student.course !== filterCourse) return;
+                if (searchReg && !student.regNo.toLowerCase().includes(searchReg)) return;
+
+                if (student.examResults) {
+                    student.examResults.forEach((res, idx) => {
+                        const exam = db.onlineExams.find(x => x.id === res.examId);
+                        const examName = exam ? exam.name : 'Unknown Exam';
+                        const percent = ((res.score / res.total) * 100).toFixed(1);
+                        const status = percent >= 50 ? '<span style="color:#10b981">PASS</span>' : '<span style="color:#ef4444">FAIL</span>';
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><strong>${student.name}</strong><br><small>${student.regNo}</small></td>
+                                <td>${examName}</td>
+                                <td>${res.score} / ${res.total}</td>
+                                <td>${percent}%</td>
+                                <td>${status}</td>
+                                <td><button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteOnlineResult('${student.regNo}', ${idx})">Del</button></td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+
+            if (tbody.innerHTML === '') {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No online exam results found.</td></tr>';
+            }
+        }
+
+        function deleteOnlineResult(regNo, idx) {
+            if (confirm("Delete this exam result?")) {
+                const db = getDB();
+                const student = db.students.find(s => s.regNo === regNo);
+                if (student && student.examResults) {
+                    student.examResults.splice(idx, 1);
+                    saveDB(db);
+                    searchAllResults();
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
