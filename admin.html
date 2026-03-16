@@ -854,11 +854,18 @@
                             const correctLetter = String(row[5] || "").trim().toUpperCase();
                             const ansIndex = ['A', 'B', 'C', 'D'].indexOf(correctLetter);
                             
-                            questions.push({
-                                q: row[0],
-                                options: [row[1], row[2], row[3], row[4]],
-                                ans: ansIndex // Store as index 0-3
-                            });
+                            let correct = row[5];
+
+if (typeof correct === "string") {
+    correct = correct.trim().toUpperCase();
+    correct = ["A","B","C","D"].indexOf(correct);
+}
+
+questions.push({
+    q: row[0],
+    options: [row[1], row[2], row[3], row[4]],
+    ans: parseInt(correct)
+});
                         }
                     }
 
