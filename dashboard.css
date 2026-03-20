@@ -204,5 +204,6 @@
 
 .att-day.P { background: rgba(16, 185, 129, 0.2); border-color: #10B981; color: #10B981; }
 .att-day.A { background: rgba(239, 68, 68, 0.2); border-color: #EF4444; color: #EF4444; }
+.att-day.faded { opacity: 0.3; filter: grayscale(1); pointer-events: none; border-style: dashed; }
 
 .att-day:hover { transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }

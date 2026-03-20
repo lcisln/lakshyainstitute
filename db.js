@@ -28,6 +28,7 @@ function getDB() {
                             '01': 'P', '02': 'P', '03': 'A', '04': 'P'
                         }
                     },
+                    admissionDate: '2026-03-01',
                     exams: []
                 }
             ],

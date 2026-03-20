@@ -192,10 +192,6 @@
                     <h2>Available Online Exams</h2>
                     <p class="text-muted">Take your course exams and check results here.</p>
                 </div>
-                <div id="topperAnnouncement" class="card mb-4" style="display:none; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; text-align: center;">
-                    <h2 style="margin-bottom:0.5rem;">🎊 Congratulations! 🎊</h2>
-                    <p style="font-size:1.2rem;" id="topperMessage"></p>
-                </div>
                 <div id="studentExamsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
                     <!-- Available exams will be injected here -->
                 </div>
@@ -329,6 +325,9 @@
                 const isMyCourse = exam.course === 'All' || exam.course === studentData.course;
                 if (!isMyCourse) return;
 
+                // Only show if exam is live
+                if (!exam.published) return;
+
                 const expiry = new Date(exam.expiry);
                 const isExpired = now > expiry;
                 if (isExpired) return;
@@ -337,7 +336,7 @@
 
                 let actionHtml = '';
                 if (result) {
-                    if (exam.published) {
+                    if (exam.resultsPublished) {
                         actionHtml = `<button class="btn btn-secondary" onclick="reviewExam('${exam.id}')">Review Result</button>`;
                     } else {
                         actionHtml = `<span class="text-muted">Result Pending</span>`;
@@ -427,6 +426,22 @@
 
             alert(`Thank You. Your Result will be published soon.`);
             showExamList();
+            // Removed checkTopperStatus from here as per user request
+        }
+
+        function getRank(examId, myScore) {
+            const db = getDB();
+            let scores = [];
+
+            db.students.forEach(s => {
+                if (s.examResults) {
+                    const r = s.examResults.find(x => x.examId === examId);
+                    if (r) scores.push(r.score);
+                }
+            });
+
+            scores.sort((a, b) => b - a);
+            return scores.indexOf(myScore) + 1;
         }
 
         function reviewExam(examId) {
@@ -438,10 +453,20 @@
 
             document.getElementById('examListSection').style.display = 'none';
             document.getElementById('examReviewSection').style.display = 'block';
+
+            const percent = ((result.score / result.total) * 100).toFixed(1);
+            const rank = getRank(examId, result.score);
+
             document.getElementById('reviewExamName').innerText = `Review: ${exam.name}`;
             
-            const percent = ((result.score / result.total) * 100).toFixed(1);
-            document.getElementById('reviewScoreText').innerText = `Score: ${result.score} / ${result.total} (${percent}%)`;
+            document.getElementById('reviewScoreText').innerHTML = `
+                Score: ${result.score}/${result.total} (${percent}%)<br>
+                Rank: ${rank}
+                <div style="text-align:center; margin-top:20px;">
+                    <div style="font-size:60px;">🏆🎓</div>
+                    <h2 style="color:gold;">Rank #${rank}</h2>
+                </div>
+            `;
 
             const container = document.getElementById('reviewContainer');
             container.innerHTML = '';
@@ -465,15 +490,12 @@
 
         function checkTopperStatus() {
             const db = getDB(); // Get fresh DB
-            const announcement = document.getElementById('topperAnnouncement');
-            const msg = document.getElementById('topperMessage');
-            announcement.style.display = 'none';
 
             if (!db.onlineExams) return;
 
-            // Find latest published exam
+            // Find latest exams with results published
             const publishedExams = db.onlineExams
-                .filter(x => x.published)
+                .filter(x => x.resultsPublished)
                 .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             if (publishedExams.length === 0) return;
@@ -482,8 +504,7 @@
             
             // Only show message if the student has a result for THIS specific latest exam
             const myResult = studentData.examResults ? studentData.examResults.find(r => r.examId === latestExam.id) : null;
-            if (!myResult) return;
-
+            
             // Find all results for this specific exam to determine topper
             const allResults = [];
             db.students.forEach(s => {
@@ -499,12 +520,82 @@
             const maxScore = Math.max(...allResults.map(r => r.score));
             const toppers = allResults.filter(r => r.score === maxScore);
 
-            const isMeTopper = toppers.some(t => t.regNo === studentData.regNo);
+            const isMeTopper = myResult && toppers.some(t => t.regNo === studentData.regNo);
             
-            if (isMeTopper) {
-                announcement.style.display = 'block';
-                msg.innerText = `Congratulations! You are Top Scorer of this Exam`;
+            // Removed topper message as per user request
+            
+            // Show Top 3 Leaderboard
+            renderLeaderboard(latestExam.id, allResults);
+        }
+
+        function renderLeaderboard(examId, allResults) {
+            const leaderboardContainer = document.getElementById('leaderboardSection');
+            if (!leaderboardContainer) {
+                const resultsSection = document.getElementById('panel-results');
+                const lbDiv = document.createElement('div');
+                lbDiv.id = 'leaderboardSection';
+                lbDiv.className = 'card mt-4';
+                lbDiv.style.background = 'rgba(255, 255, 255, 0.05)';
+                resultsSection.appendChild(lbDiv);
             }
+
+            const container = document.getElementById('leaderboardSection');
+            
+            allResults.sort((a, b) => b.score - a.score);
+            const top3 = allResults.slice(0, 3);
+
+            if (top3.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            
+            let html = `<h3 style="margin-bottom:2rem; text-align:center; color: var(--secondary); font-size: 1.5rem;">🏆 Top 3 Performers</h3>`;
+            html += `<div style="display: flex; justify-content: space-around; gap: 1.5rem; flex-wrap: wrap; align-items: flex-end;">`;
+            
+            top3.forEach((s, idx) => {
+                const isFirst = idx === 0;
+                const size = isFirst ? '140px' : '110px';
+                const order = isFirst ? 2 : (idx === 1 ? 1 : 3); // 2nd, 1st, 3rd layout
+                
+                const medalColors = [
+                    { main: '#ffd700', dark: '#b8860b', text: '1' }, // Gold
+                    { main: '#c0c0c0', dark: '#708090', text: '2' }, // Silver
+                    { main: '#cd7f32', dark: '#8b4513', text: '3' }  // Bronze
+                ];
+                const mc = medalColors[idx];
+
+                const svgMedal = `
+                    <svg width="${size}" height="${size}" viewBox="0 0 100 100">
+                        <defs>
+                            <linearGradient id="grad${idx}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:${mc.main};stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:${mc.dark};stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="shadow${idx}" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.3"/>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#grad${idx})" filter="url(#shadow${idx})" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="2,2"/>
+                        <text x="50" y="65" font-family="Arial, sans-serif" font-size="40" font-weight="900" text-anchor="middle" fill="white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${mc.text}</text>
+                    </svg>
+                `;
+
+                html += `
+                    <div style="text-align: center; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 20px; min-width: 180px; border: 1px solid var(--border); order: ${order}; position: relative; transition: transform 0.3s ease;">
+                        <div style="width: ${size}; height: ${size}; margin: 0 auto 1.2rem; display: flex; align-items: center; justify-content: center;">
+                            ${svgMedal}
+                        </div>
+                        <h4 style="margin: 0; color: white; font-size: 1.1rem;">${s.name}</h4>
+                        <p class="text-muted" style="font-size: 0.9rem; margin-top: 5px;">Score: <strong>${s.score}</strong></p>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html;
         }
 
         // Populate Fees
@@ -551,9 +642,11 @@
 
             for (let i = 1; i <= daysInMonth; i++) {
                 let dStr = String(i).padStart(2, '0');
+                let dayFullDate = `${val}-${dStr}`; // YYYY-MM-DD
                 let status = monthData ? monthData[dStr] : '';
 
-                let sClass = '';
+                let isFaded = studentData.admissionDate && dayFullDate < studentData.admissionDate;
+                let sClass = isFaded ? 'faded' : '';
                 if (status === 'P') { sClass = 'P'; presents++; }
                 if (status === 'A') { sClass = 'A'; absents++; }
 
@@ -665,7 +758,7 @@
             if (studentData.examResults) {
                 studentData.examResults.forEach(res => {
                     const exam = db.onlineExams.find(x => x.id === res.examId);
-                    if (exam && exam.published) {
+                    if (exam && exam.resultsPublished) {
                         allResults.push({
                             date: new Date(res.date).toLocaleDateString('en-GB'),
                             subject: exam.name,
@@ -722,6 +815,9 @@
                 document.getElementById('downloadCertBtn').style.display = 'block';
                 document.getElementById('certMessage').innerText = "Congratulations! You can now download your course certificate.";
             }
+
+            // Also check topper status and leaderboard here
+            checkTopperStatus();
         }
 
         function generateCertificate() {

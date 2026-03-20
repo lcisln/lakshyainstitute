@@ -28,6 +28,7 @@
             <li onclick="switchPanel('onlineexam')">Online Exam</li>
             <li onclick="switchPanel('enquiries')">Enquiries</li>
             <li onclick="switchPanel('expenses')">Daily Expenses</li>
+            <li onclick="switchPanel('settings')">Settings</li>
         </ul>
         <div style="flex:1"></div>
         <div class="logout-btn" onclick="logoutUser()">🚪 Logout</div>
@@ -92,6 +93,10 @@
                         <div class="form-group">
                             <label>Student Photo</label>
                             <input type="file" id="stuPhoto" accept="image/*" style="padding: 0.8rem;">
+                        </div>
+                        <div class="form-group">
+                            <label>Admission Date</label>
+                            <input type="date" id="stuAdmissionDate" required>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Complete Admission</button>
@@ -464,6 +469,11 @@
                 <p class="text-muted">View offline marks or check online MCQ test performance.</p>
             </div>
 
+            <!-- Top Performers Section -->
+            <div id="adminLeaderboardSection" class="card mb-4" style="display:none; background: rgba(255, 255, 255, 0.05);">
+                <!-- Content will be injected by searchAllResults -->
+            </div>
+
             <div class="card mb-4">
                 <div class="form-grid" style="grid-template-columns: 1fr 1fr auto; align-items: end;">
                     <div class="form-group">
@@ -489,7 +499,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <button class="btn btn-primary" onclick="searchAllResults()">View Online Results</button>
+                        <button class="btn btn-primary" onclick="loadOnlineResults()">View Online Results</button>
                     </div>
                 </div>
             </div>
@@ -498,11 +508,13 @@
                 <table class="data-table" id="onlineResultsTable">
                     <thead>
                         <tr>
+                            <th>Rank</th>
                             <th>Student</th>
                             <th>Exam Name</th>
-                            <th>Score</th>
+                            <th>Marks</th>
                             <th>%</th>
-                            <th>Status</th>
+                            <th>Result</th>
+                            <th>Visibility</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -679,7 +691,8 @@
                             <th>Course</th>
                             <th>Date</th>
                             <th>Expiry</th>
-                            <th>Status</th>
+                            <th>Exam Status</th>
+                            <th>Result Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -739,6 +752,32 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- Settings Panel -->
+        <section id="panel-settings" class="panel">
+            <div class="panel-header">
+                <h2>System Settings</h2>
+                <p class="text-muted">Manage your administrative preferences and security.</p>
+            </div>
+            <div class="card" style="max-width: 500px;">
+                <h3 style="margin-bottom: 1.5rem; color: var(--secondary);">Change Admin Password</h3>
+                <form id="changePassForm" class="contact-form" style="padding: 0; border: none; background: transparent;">
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input type="password" id="currPass" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPass" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="confPass" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Update Password</button>
+                </form>
             </div>
         </section>
     </main>
@@ -821,7 +860,7 @@
             if (panelId === 'notifications') renderNotificationsTable();
             if (panelId === 'results') {
                 document.getElementById('resStudentDetails').style.display = 'none';
-                searchAllResults();
+                loadOnlineResults();
             }
             if (panelId === 'onlineexam') renderExamsList();
             if (panelId === 'enquiries') renderEnquiriesTable();
@@ -885,6 +924,7 @@ questions.push({
                         expiry: document.getElementById('examExpiry').value,
                         questions: questions,
                         published: false,
+                        resultsPublished: false,
                         createdAt: new Date().toISOString()
                     };
 
@@ -908,19 +948,19 @@ questions.push({
             tbody.innerHTML = '';
 
             db.onlineExams.slice().reverse().forEach(exam => {
-                const isPublished = exam.published ? '<span style="color:#10b981">Published</span>' : '<span style="color:#f59e0b">Draft</span>';
-                const publishBtnText = exam.published ? 'Unpublish' : 'Publish';
-
+                const isPublished = exam.published ? '<span style="color:#10b981">Live</span>' : '<span style="color:#f59e0b">Hidden</span>';
+                const isResultsReleased = exam.resultsPublished ? '<span style="color:#10b981">Released</span>' : '<span style="color:#f59e0b">Pending</span>';
+                
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${exam.name}</strong></td>
                         <td>${exam.course}</td>
                         <td>${exam.date}</td>
                         <td style="font-size:0.8rem;">${new Date(exam.expiry).toLocaleString()}</td>
-                        <td>${isPublished}</td>
+                        <td>${isPublished} <button class="btn btn-primary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; margin-left:5px;" onclick="togglePublish('${exam.id}')">${exam.published ? 'Hide' : 'Make Live'}</button></td>
+                        <td>${isResultsReleased} <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; margin-left:5px;" onclick="toggleResultsPublish('${exam.id}')">${exam.resultsPublished ? 'Hide' : 'Publish'}</button></td>
                         <td>
-                            <button class="btn btn-primary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="togglePublish('${exam.id}')">${publishBtnText}</button>
-                            <button class="btn btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444; margin-left:0.3rem;" onclick="deleteExam('${exam.id}')">Del</button>
+                            <button class="btn btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteExam('${exam.id}')">Del</button>
                         </td>
                     </tr>
                 `;
@@ -932,6 +972,16 @@ questions.push({
             const idx = db.onlineExams.findIndex(x => x.id === id);
             if (idx !== -1) {
                 db.onlineExams[idx].published = !db.onlineExams[idx].published;
+                saveDB(db);
+                renderExamsList();
+            }
+        }
+
+        function toggleResultsPublish(id) {
+            const db = getDB();
+            const idx = db.onlineExams.findIndex(x => x.id === id);
+            if (idx !== -1) {
+                db.onlineExams[idx].resultsPublished = !db.onlineExams[idx].resultsPublished;
                 saveDB(db);
                 renderExamsList();
             }
@@ -984,6 +1034,7 @@ questions.push({
                 fatherName: document.getElementById('stuFather').value,
                 contact: document.getElementById('stuContact').value,
                 course: document.getElementById('stuCourse').value,
+                admissionDate: document.getElementById('stuAdmissionDate').value || new Date().toISOString().split('T')[0],
                 batch: 'None',
                 address: document.getElementById('stuAddress').value,
                 photo: photoData,
@@ -998,6 +1049,7 @@ questions.push({
             saveDB(db);
             alert(`Admission successful! Registration Number is ${regNo}`);
             document.getElementById('admissionForm').reset();
+            document.getElementById('stuAdmissionDate').valueAsDate = new Date();
             renderStudentsTable();
         }
 
@@ -1635,14 +1687,18 @@ questions.push({
                 const pClass = status === 'P' ? 'btn-primary' : 'btn-secondary';
                 const aClass = status === 'A' ? 'btn-primary' : 'btn-secondary';
 
+                const isBeforeAdmission = dateStr < (s.admissionDate || '0000-00-00');
+                const btnAttr = isBeforeAdmission ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : '';
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${s.regNo}</td>
                         <td>${s.name}</td>
                         <td>${s.course}</td>
                         <td>
-                            <button class="btn ${pClass}" style="padding: 0.5rem 1rem;" onclick="markAtt('${s.regNo}', '${monthKey}', '${dayKey}', 'P')">P (Present)</button>
-                            <button class="btn ${aClass}" style="padding: 0.5rem 1rem; margin-left:0.5rem; ${status === 'A' ? 'background:#ef4444; border-color:#ef4444;' : ''}" onclick="markAtt('${s.regNo}', '${monthKey}', '${dayKey}', 'A')">A (Absent)</button>
+                            <button class="btn ${pClass}" ${btnAttr} style="padding: 0.5rem 1rem;" onclick="markAtt('${s.regNo}', '${monthKey}', '${dayKey}', 'P')">P (Present)</button>
+                            <button class="btn ${aClass}" ${btnAttr} style="padding: 0.5rem 1rem; margin-left:0.5rem; ${status === 'A' ? 'background:#ef4444; border-color:#ef4444;' : ''}" onclick="markAtt('${s.regNo}', '${monthKey}', '${dayKey}', 'A')">A (Absent)</button>
+                            ${isBeforeAdmission ? '<br><small style="color:#f59e0b">Before Admission</small>' : ''}
                         </td>
                     </tr>
                 `;
@@ -1652,6 +1708,11 @@ questions.push({
         function markAtt(regNo, month, day, status) {
             const db = getDB();
             const student = db.students.find(s => s.regNo === regNo);
+            const dateStr = `${month}-${day}`;
+            if (student.admissionDate && dateStr < student.admissionDate) {
+                alert("Cannot mark attendance before admission date!");
+                return;
+            }
             if (!student.attendance) student.attendance = {};
             if (!student.attendance[month]) student.attendance[month] = {};
 
@@ -1699,7 +1760,7 @@ questions.push({
         // Initialize
         renderStudentsTable();
 
-        function searchAllResults() {
+        function loadOnlineResults() {
             const db = getDB();
             const searchReg = document.getElementById('resSearchRegNo').value.trim().toLowerCase();
             const filterCourse = document.getElementById('resFilterCourse').value;
@@ -1708,6 +1769,8 @@ questions.push({
 
             if (!db.onlineExams) db.onlineExams = [];
 
+            const allResultsFlattened = [];
+
             db.students.forEach(student => {
                 if (filterCourse !== 'All' && student.course !== filterCourse) return;
                 if (searchReg && !student.regNo.toLowerCase().includes(searchReg)) return;
@@ -1715,27 +1778,158 @@ questions.push({
                 if (student.examResults) {
                     student.examResults.forEach((res, idx) => {
                         const exam = db.onlineExams.find(x => x.id === res.examId);
-                        const examName = exam ? exam.name : 'Unknown Exam';
-                        const percent = ((res.score / res.total) * 100).toFixed(1);
-                        const status = percent >= 50 ? '<span style="color:#10b981">PASS</span>' : '<span style="color:#ef4444">FAIL</span>';
-
-                        tbody.innerHTML += `
-                            <tr>
-                                <td><strong>${student.name}</strong><br><small>${student.regNo}</small></td>
-                                <td>${examName}</td>
-                                <td>${res.score} / ${res.total}</td>
-                                <td>${percent}%</td>
-                                <td>${status}</td>
-                                <td><button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteOnlineResult('${student.regNo}', ${idx})">Del</button></td>
-                            </tr>
-                        `;
+                        allResultsFlattened.push({
+                            student: student,
+                            result: res,
+                            exam: exam,
+                            originalIdx: idx
+                        });
                     });
                 }
             });
 
-            if (tbody.innerHTML === '') {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No online exam results found.</td></tr>';
+            // Sort by score descending
+            allResultsFlattened.sort((a, b) => b.result.score - a.result.score);
+
+            if (allResultsFlattened.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No online exam results found.</td></tr>';
+            } else {
+                allResultsFlattened.forEach((item, index) => {
+                    const s = item.student;
+                    const res = item.result;
+                    const exam = item.exam;
+                    const examName = exam ? exam.name : 'Unknown Exam';
+                    const percent = ((res.score / res.total) * 100).toFixed(1);
+                    const status = percent >= 50 ? '<span style="color:#10b981">PASS</span>' : '<span style="color:#ef4444">FAIL</span>';
+                    const isResultsReleased = exam && exam.resultsPublished ? '<span style="color:#10b981">Released</span>' : '<span style="color:#f59e0b">Pending</span>';
+                    const pubAction = exam ? `<button class="btn btn-primary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="togglePublishInResults('${exam.id}')">${exam.resultsPublished ? 'Hide' : 'Publish'}</button>` : '';
+                    
+                    const rank = index + 1;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>#${rank}</strong></td>
+                            <td><strong>${s.name}</strong><br><small>${s.regNo}</small></td>
+                            <td>${examName}</td>
+                            <td>${res.score} / ${res.total}</td>
+                            <td>${percent}%</td>
+                            <td>${status}</td>
+                            <td>${isResultsReleased} ${pubAction}</td>
+                            <td><button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteOnlineResult('${s.regNo}', ${item.originalIdx})">Del</button></td>
+                        </tr>
+                    `;
+                });
             }
+
+            // --- Top 3 Performers Logic ---
+            renderAdminLeaderboard(db);
+        }
+
+        function renderAdminLeaderboard(db) {
+            const lbContainer = document.getElementById('adminLeaderboardSection');
+            const filterCourse = document.getElementById('resFilterCourse').value;
+            
+            let relevantExams = db.onlineExams || [];
+            if (filterCourse !== 'All') {
+                relevantExams = relevantExams.filter(x => x.course === filterCourse);
+            }
+            
+            relevantExams.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            if (relevantExams.length === 0) {
+                lbContainer.style.display = 'none';
+                return;
+            }
+
+            const latestExam = relevantExams[0];
+            const allResults = [];
+            
+            db.students.forEach(student => {
+                if (student.examResults) {
+                    const r = student.examResults.find(res => res.examId === latestExam.id);
+                    if (r) allResults.push({ name: student.name, regNo: student.regNo, score: r.score });
+                }
+            });
+
+            if (allResults.length === 0) {
+                lbContainer.style.display = 'none';
+                return;
+            }
+
+            allResults.sort((a,b) => b.score - a.score);
+            const top3 = allResults.slice(0, 3);
+            
+            lbContainer.style.display = 'block';
+            let html = `<h3 style="margin-bottom:1.5rem; text-align:center; color: var(--secondary);">Top Performers: ${latestExam.name}</h3>`;
+            html += `<div style="display: flex; justify-content: space-around; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">`;
+            
+            top3.forEach((s, idx) => {
+                const isFirst = idx === 0;
+                const size = isFirst ? '110px' : '90px';
+                const order = isFirst ? 2 : (idx === 1 ? 1 : 3); // 2nd, 1st, 3rd layout
+                
+                const medalColors = [
+                    { main: '#ffd700', dark: '#b8860b', text: '1' }, // Gold
+                    { main: '#c0c0c0', dark: '#708090', text: '2' }, // Silver
+                    { main: '#cd7f32', dark: '#8b4513', text: '3' }  // Bronze
+                ];
+                const mc = medalColors[idx];
+
+                const svgMedal = `
+                    <svg width="${size}" height="${size}" viewBox="0 0 100 100">
+                        <defs>
+                            <linearGradient id="adminGrad${idx}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:${mc.main};stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:${mc.dark};stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#adminGrad${idx})" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="2,2"/>
+                        <text x="50" y="65" font-family="Arial, sans-serif" font-size="40" font-weight="900" text-anchor="middle" fill="white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${mc.text}</text>
+                    </svg>
+                `;
+
+                html += `
+                    <div style="text-align: center; padding: 1.2rem; background: rgba(255,255,255,0.05); border-radius: 15px; min-width: 150px; border: 1px solid var(--border); order: ${order};">
+                        <div style="width: ${size}; height: ${size}; margin: 0 auto 0.8rem; display: flex; align-items: center; justify-content: center;">
+                            ${svgMedal}
+                        </div>
+                        <h4 style="margin: 0; color: white; font-size: 1rem;">${s.name}</h4>
+                        <p class="text-muted" style="font-size: 0.8rem;">Score: <strong>${s.score}</strong></p>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            lbContainer.innerHTML = html;
+        }
+
+        // --- Settings Logic ---
+        document.getElementById('changePassForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const curr = document.getElementById('currPass').value;
+            const next = document.getElementById('newPass').value;
+            const conf = document.getElementById('confPass').value;
+
+            const db = getDB();
+            if (curr !== db.users.admin.password) {
+                alert("Current password incorrect!");
+                return;
+            }
+            if (next !== conf) {
+                alert("New passwords do not match!");
+                return;
+            }
+
+            db.users.admin.password = next;
+            saveDB(db);
+            alert("Password updated successfully!");
+            this.reset();
+        });
+
+        function togglePublishInResults(id) {
+            toggleResultsPublish(id); // Now specifically toggles result publishing
+            loadOnlineResults(); // Refresh table
         }
 
         function deleteOnlineResult(regNo, idx) {
@@ -1745,7 +1939,7 @@ questions.push({
                 if (student && student.examResults) {
                     student.examResults.splice(idx, 1);
                     saveDB(db);
-                    searchAllResults();
+                    loadOnlineResults();
                 }
             }
         }
